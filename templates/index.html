@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Vehicle Parking App{% endblock %}
+
+{% block content %}
+<div id="app">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-gradient-blue">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-car"></i> Vehicle Parking App
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link active" href="/">Home</a>
+                <a class="nav-link" href="/user">User Portal</a>
+                <a class="nav-link" href="/admin">Admin Portal</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <div class="hero-section bg-light py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold text-primary mb-3">Welcome to Vehicle Parking App!</h1>
+                    <p class="lead text-muted mb-4">Find, book, and manage parking spaces with ease. Smart parking solutions for modern urban life.</p>
+                    <div class="d-flex gap-3 justify-content-center justify-content-lg-start">
+                        <button @click="goTo('/admin')" class="btn btn-danger btn-lg">
+                            <i class="fas fa-user-shield me-2"></i>Admin Login
+                        </button>
+                        <button @click="goTo('/user')" class="btn btn-success btn-lg">
+                            <i class="fas fa-user me-2"></i>User Login
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <img src="{{ url_for('static', filename='images/parking.jpg') }}" 
+                         alt="Vehicle Parking Lot" 
+                         class="img-fluid rounded shadow-lg"
+                         style="max-height: 400px; width: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Features Section -->
+    <div class="features-section py-5 bg-white">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card p-4">
+                        <i class="fas fa-search fa-3x text-primary mb-3"></i>
+                        <h4 class="fw-bold">Find Parking</h4>
+                        <p class="text-muted">Discover available parking spaces near your destination with real-time availability.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card p-4">
+                        <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                        <h4 class="fw-bold">Book Instantly</h4>
+                        <p class="text-muted">Reserve your parking spot in advance with just a few clicks. No more searching!</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card p-4">
+                        <i class="fas fa-mobile-alt fa-3x text-info mb-3"></i>
+                        <h4 class="fw-bold">Manage Easily</h4>
+                        <p class="text-muted">Track your bookings, view history, and manage your parking preferences seamlessly.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    const { createApp } = Vue;
+    createApp({
+        methods: {
+            goTo(path) {
+                window.location.href = path;
+            }
+        }
+    }).mount('#app');
+</script>
+{% endblock %}

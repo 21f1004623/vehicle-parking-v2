@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block additional_js %}
+<!-- Vue Router -->
+<script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div id="admin-app">
+    <router-view></router-view>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="/static/components/adminlogin.js"></script>
+<script src="/static/components/admindashboard.js"></script>
+<script src="/static/components/adminanalytics.js"></script>
+<script type="module" src="/static/admin-app.js"></script>
+{% endblock %}

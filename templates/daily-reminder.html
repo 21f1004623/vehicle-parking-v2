@@ -1,0 +1,20 @@
+
+{% extends "base_email.html" %}
+
+{% block header %}
+<title>{{ subject }}</title>
+<h2>{{ subject }}</h2>
+{% endblock %}
+
+{% block content %}
+<h3>Hi {{ user.name }},</h3>
+<p>This is your daily reminder about parking availability in your area.</p>
+
+<div class="alert alert-info">
+    <strong>Available Parking Spots:</strong> {{ available_spots }} spots currently available
+</div>
+
+<p>Don't forget to book your parking spot in advance to secure your preferred location!</p>
+
+<a href="http://localhost:5000/user" class="btn btn-primary">Book Now</a>
+{% endblock %}
