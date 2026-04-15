@@ -1,21 +1,12 @@
-
 from flask import request
 from flask_restful import Resource
 from applications.models import User, ParkingLot, ParkingSpot, Reservation
 from applications import db
 from applications.worker import export_csv
+from applications.utils import api_response
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from datetime import datetime
 from celery.result import AsyncResult
-
-# Helper for consistent API responses
-def api_response(success, message=None, data=None, status=200):
-    resp = {"success": success}
-    if message is not None:
-        resp["message"] = message
-    if data is not None:
-        resp.update(data)
-    return resp, status
 
 
 class AdminAPI(Resource):

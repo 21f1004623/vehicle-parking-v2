@@ -31,13 +31,6 @@ def setup_periodic_tasks(sender, **kwargs):
         crontab(day_of_month=1, hour=9, minute=0), user_monthly_activity_report.s(), name="user monthly activity reports (9 AM 1st)"
     )
 
-    sender.add_periodic_task(
-        crontab(), daily_reminder.s(), name="daily parking reminder"
-    )
-    sender.add_periodic_task(
-        crontab(), monthly_report.s(), name="monthly parking report)"
-    )
-
 
 # --- API Setup ---
 api = Api(tsapp)

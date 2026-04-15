@@ -11,4 +11,6 @@ Flask-Caching==2.0.2
 # Celery for background tasks
 celery==5.3.1
 # Email templates
-Jinja2==3.1.2 
+Jinja2==3.1.2
+# Environment variable support
+python-dotenv==1.0.0

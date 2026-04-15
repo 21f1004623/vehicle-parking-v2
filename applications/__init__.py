@@ -1,24 +1,32 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 db = SQLAlchemy()
 jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
-    
-    # Basic configuration
-    app.config['SECRET_KEY'] = 'your-secret-key-here'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///parking.db'
+
+    # Basic configuration — override defaults via environment variables
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'change-me-in-production')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///parking.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
+    app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me-in-production')
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
-    
+
+    redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
     # Redis and Celery configuration
     app.config["CELERY"] = {
-        "broker_url": "redis://localhost:6379/0",      # Database 0 - Task Queue
-        "result_backend": "redis://localhost:6379/1",  # Database 1 - Results
+        "broker_url": f"{redis_url}/0",      # Database 0 - Task Queue
+        "result_backend": f"{redis_url}/1",  # Database 1 - Results
         "broker_connection_retry_on_startup": True
     }
     

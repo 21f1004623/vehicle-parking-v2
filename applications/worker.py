@@ -39,7 +39,6 @@ def daily_reminder():
                 subject=subject
             )
             msg.attach(MIMEText(html, 'html'))
-            print(msg.as_string())
             smtpObj.sendmail(msg['From'], [msg['To']], msg.as_string())
         
         smtpObj.quit()
@@ -97,9 +96,8 @@ def monthly_report():
             subject=subject
         )
         msg.attach(MIMEText(html, 'html'))
-        print(msg.as_string())
         smtpObj.sendmail(msg['From'], [msg['To']], msg.as_string())
-        
+
         smtpObj.quit()
         return f"Monthly report sent to {admin.name}"
 

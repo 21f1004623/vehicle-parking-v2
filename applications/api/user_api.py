@@ -1,27 +1,18 @@
-
-from flask import request
+import io
+import csv
+from flask import request, Response
 from flask_restful import Resource
 from applications.models import User, ParkingLot, ParkingSpot, Reservation
 from applications import db
+from applications.cache import cache
+from applications.utils import api_response
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from datetime import datetime
-from celery.result import AsyncResult
-
-
 
 # Constants for better code readability
 SPOT_STATUS_AVAILABLE = 'A'
 SPOT_STATUS_OCCUPIED = 'O'
 MINIMUM_PARKING_HOURS = 1.0
-
-# Helper for consistent API responses
-def api_response(success, message=None, data=None, status=200):
-    resp = {"success": success}
-    if message is not None:
-        resp["message"] = message
-    if data is not None:
-        resp.update(data)
-    return resp, status
 
 class UserLoginAPI(Resource):
     """Handle user authentication and login"""
@@ -94,13 +85,10 @@ class UserRegistrationAPI(Resource):
 
 class ParkingLocationAPI(Resource):
     """Handle parking lot information for users"""
-    
-    from applications.cache import cache
 
     @jwt_required()
     @cache.cached(timeout=30, key_prefix='parking_locations')
     def get(self):
-        print("[CACHE MISS] Parking locations fetched from DB.")
         all_parking_lots = ParkingLot.query.all()
         available_locations = []
         for parking_lot in all_parking_lots:
@@ -389,18 +377,15 @@ class UserCSVExportAPI(Resource):
                     "Completed" if reservation.leaving_timestamp else "Active"
                 ])
 
-            import io, csv
             output = io.StringIO()
             writer = csv.writer(output)
             writer.writerows(csv_content)
             csv_string = output.getvalue()
             output.close()
 
-            from datetime import datetime
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f"my_parking_history_{timestamp}.csv"
 
-            from flask import Response
             return Response(
                 csv_string,
                 mimetype='text/csv',
@@ -408,7 +393,7 @@ class UserCSVExportAPI(Resource):
             )
 
         except Exception as e:
-            return {"success": False, "message": f"Export failed: {str(e)}"}, 500
+            return api_response(False, f"Export failed: {str(e)}", status=500)
 
 
 
