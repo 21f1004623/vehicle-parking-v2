@@ -125,9 +125,14 @@ window.BookParking = {
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
           body: JSON.stringify({ lot_id: parseInt(this.selectedLotId), vehicle_number: this.vehicleNumber.toUpperCase() })
         });
-        if (res.ok) { alert('Parking booked successfully!'); this.$router.push('/bookings'); }
-        else { const e = await res.json(); alert(e.message || 'Booking failed'); }
-      } catch { alert('Booking failed'); }
+        if (res.ok) {
+          Toast.success('Parking booked successfully!');
+          setTimeout(() => this.$router.push('/bookings'), 1200);
+        } else {
+          const e = await res.json();
+          Toast.error(e.message || 'Booking failed');
+        }
+      } catch { Toast.error('Booking failed. Please try again.'); }
       finally { this.booking = false; }
     },
     logout() { localStorage.removeItem('token'); localStorage.removeItem('isAdmin'); this.$router.push('/login'); }

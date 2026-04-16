@@ -33,6 +33,48 @@ window.UserBookings = {
 
         <div class="page-content">
 
+          <!-- Receipt Modal -->
+          <div v-if="showReceipt" class="modal-backdrop" @click.self="showReceipt=false">
+            <div class="modal-box">
+              <div class="receipt-header">
+                <div class="receipt-icon"><i class="fas fa-receipt"></i></div>
+                <div style="font-size:.85rem;opacity:.85;">Parking Session Complete</div>
+                <div class="receipt-total">{{ receipt.total_cost }}</div>
+              </div>
+              <div class="modal-body">
+                <div class="receipt-row">
+                  <span class="label"><i class="fas fa-parking" style="margin-right:.4rem;"></i>Location</span>
+                  <span class="value">{{ receipt.location }}</span>
+                </div>
+                <div class="receipt-row">
+                  <span class="label"><i class="fas fa-car" style="margin-right:.4rem;"></i>Vehicle</span>
+                  <span class="value">{{ receipt.vehicle }}</span>
+                </div>
+                <div class="receipt-row">
+                  <span class="label"><i class="fas fa-sign-in-alt" style="margin-right:.4rem;"></i>Check-in</span>
+                  <span class="value">{{ receipt.started_at }}</span>
+                </div>
+                <div class="receipt-row">
+                  <span class="label"><i class="fas fa-sign-out-alt" style="margin-right:.4rem;"></i>Check-out</span>
+                  <span class="value">{{ receipt.ended_at }}</span>
+                </div>
+                <div class="receipt-row">
+                  <span class="label"><i class="fas fa-clock" style="margin-right:.4rem;"></i>Duration</span>
+                  <span class="value">{{ receipt.duration }}</span>
+                </div>
+                <div class="receipt-row">
+                  <span class="label"><i class="fas fa-tag" style="margin-right:.4rem;"></i>Rate</span>
+                  <span class="value">{{ receipt.hourly_rate }}/hr</span>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-primary btn-block" @click="showReceipt=false">
+                  <i class="fas fa-check"></i> Done
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Active Bookings -->
           <div style="margin-bottom:2rem;">
             <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">
@@ -122,7 +164,11 @@ window.UserBookings = {
   `,
 
   data() {
-    return { activeBookings: [], bookingHistory: [], currentTime: new Date(), timerInterval: null };
+    return {
+      activeBookings: [], bookingHistory: [],
+      currentTime: new Date(), timerInterval: null,
+      showReceipt: false, receipt: {}
+    };
   },
 
   methods: {
@@ -163,9 +209,16 @@ window.UserBookings = {
       if (!confirm('End this booking?')) return;
       try {
         const res = await fetch(`/api/reservations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-        if (res.ok) { const r = await res.json(); alert(`Booking ended. Cost: ${r.bill_summary?.total_cost ?? 'N/A'}`); this.fetchBookings(); }
-        else { const e = await res.json(); alert(e.message || 'Failed'); }
-      } catch { alert('Failed to end booking'); }
+        if (res.ok) {
+          const r = await res.json();
+          this.receipt = r.bill_summary || {};
+          this.showReceipt = true;
+          this.fetchBookings();
+        } else {
+          const e = await res.json();
+          Toast.error(e.message || 'Failed to end booking');
+        }
+      } catch { Toast.error('Failed to end booking'); }
     },
     async exportToCSV() {
       try {
@@ -173,8 +226,11 @@ window.UserBookings = {
         if (res.ok) {
           const a = document.createElement('a'); a.href = URL.createObjectURL(await res.blob());
           a.download = `my_parking_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+          Toast.success('CSV exported successfully');
+        } else {
+          Toast.error('Failed to export CSV');
         }
-      } catch {}
+      } catch { Toast.error('Export failed. Please try again.'); }
     },
     logout() { localStorage.removeItem('token'); localStorage.removeItem('isAdmin'); this.$router.push('/login'); }
   },

@@ -758,6 +758,86 @@ body {
   .top-bar { padding: .75rem 1rem; }
 }
 
+/* ── Toast Notifications ────────────────────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: .625rem;
+  pointer-events: none;
+}
+.toast-item {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  padding: .875rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  border-left: 4px solid;
+  min-width: 280px;
+  max-width: 360px;
+  pointer-events: all;
+  opacity: 0;
+  transform: translateX(120%);
+  transition: opacity .28s ease, transform .28s ease;
+}
+.toast-item.toast-visible  { opacity: 1; transform: translateX(0); }
+.toast-item.toast-hiding   { opacity: 0; transform: translateX(120%); }
+
+.toast-success { border-color: var(--success); }
+.toast-success .toast-icon { color: var(--success); }
+.toast-error   { border-color: var(--danger);  }
+.toast-error   .toast-icon { color: var(--danger);  }
+.toast-warning { border-color: var(--warning); }
+.toast-warning .toast-icon { color: var(--warning); }
+.toast-info    { border-color: var(--info);    }
+.toast-info    .toast-icon { color: var(--info);    }
+
+.toast-icon { font-size: 1rem; flex-shrink: 0; }
+.toast-msg  { font-size: .85rem; font-weight: 500; color: var(--text); flex: 1; line-height: 1.4; }
+.toast-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 1.1rem; padding: 0 .2rem;
+  line-height: 1; flex-shrink: 0;
+}
+.toast-close:hover { color: var(--text); }
+
+/* ── Receipt Modal ──────────────────────────────────────────────────────────── */
+.receipt-header {
+  background: linear-gradient(135deg, #065f46, #10b981);
+  padding: 1.5rem;
+  text-align: center;
+  color: #fff;
+}
+.receipt-icon {
+  width: 56px; height: 56px;
+  background: rgba(255,255,255,.15);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  margin: 0 auto .75rem;
+}
+.receipt-total {
+  font-size: 2rem;
+  font-weight: 900;
+  margin: .25rem 0 0;
+}
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .625rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .875rem;
+}
+.receipt-row:last-child { border-bottom: none; }
+.receipt-row .label { color: var(--text-muted); font-weight: 500; }
+.receipt-row .value { font-weight: 700; color: var(--text); text-align: right; max-width: 60%; }
+
 /* ── Utility ────────────────────────────────────────────────────────────────── */
 .flex { display: flex; }
 .items-center { align-items: center; }
