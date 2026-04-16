@@ -8,14 +8,15 @@ A full-stack web application for managing vehicle parking — built with Flask, 
 ## Features
 
 ### User
-- Register / login with JWT authentication
+- Register / login with JWT authentication (**passwords hashed with werkzeug**)
 - Browse parking lots with **live search, availability filter, and price sort**
 - Book a parking spot (auto-assigns next available spot)
 - **Live duration timer and estimated cost** on active bookings
+- **Reservation receipt modal** — styled bill summary after ending a session
 - Full booking history with check-in / check-out times and cost
 - Personal analytics — spending trends, weekly usage charts, favourite location
 - Export booking history to CSV
-- Manage profile — name, email, **change password**
+- Profile page — name, email, bookings count, total spent, **change password**
 - Monthly activity report delivered by email
 
 ### Admin
@@ -29,6 +30,7 @@ A full-stack web application for managing vehicle parking — built with Flask, 
 - Monthly analytics report delivered by email
 
 ### System
+- **Toast notifications** — non-blocking success/error/warning messages throughout the app
 - Redis-cached API responses (1-minute TTL)
 - Celery background workers for async CSV export and email delivery
 - Celery Beat scheduled tasks:
@@ -45,7 +47,7 @@ A full-stack web application for managing vehicle parking — built with Flask, 
 | Layer | Technology |
 |-------|------------|
 | Backend | Flask 2.3, Flask-RESTful, SQLAlchemy 2.0 |
-| Auth | Flask-JWT-Extended (JWT tokens) |
+| Auth | Flask-JWT-Extended (JWT tokens), Werkzeug password hashing |
 | Frontend | Vue.js 3, Vue Router 4, Chart.js, Font Awesome |
 | Styling | Custom CSS design system (Inter font, no Bootstrap) |
 | Database | SQLite (auto-created on first run) |
