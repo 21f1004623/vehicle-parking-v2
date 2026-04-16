@@ -1,495 +1,391 @@
 window.AdminDashboard = {
-    template: `
-        <div class="container-fluid p-4">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-tachometer-alt text-primary"></i> Admin Dashboard</h2>
-                <button class="btn btn-outline-danger" @click="logout">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
+  template: `
+    <div class="app-shell">
 
-            <!-- Navigation Tabs -->
-            <ul class="nav nav-tabs mb-4">
-                <li class="nav-item">
-                    <button class="nav-link" :class="{ active: activeSection === 'parking' }" @click="setActiveSection('parking')">
-                        <i class="fas fa-parking"></i> Parking Lot Details
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" :class="{ active: activeSection === 'users' }" @click="setActiveSection('users')">
-                        <i class="fas fa-users"></i> Users
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" :class="{ active: activeSection === 'reservations' }" @click="setActiveSection('reservations')">
-                        <i class="fas fa-calendar-check"></i> Reservations
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" @click="$router.push('/analytics')">
-                        <i class="fas fa-chart-bar"></i> Analytics & Charts
-                    </button>
-                </li>
-            </ul>
-
-            <!-- Error Message -->
-            <div v-if="error" class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle"></i> {{ error }}
-                <button class="btn btn-sm btn-outline-danger ms-2" @click="retryLoad">
-                    <i class="fas fa-redo"></i> Retry
-                </button>
-            </div>
-
-            <!-- Success Message -->
-            <div v-if="successMessage" class="alert alert-success">
-                <i class="fas fa-check-circle"></i> {{ successMessage }}
-            </div>
-
-            <!-- Loading -->
-            <div v-if="loading" class="text-center py-5">
-                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-                <p class="mt-3">Loading...</p>
-            </div>
-
-            <!-- Parking Lots Section -->
-            <div v-if="activeSection === 'parking' && !loading">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4>Parking Lot Details</h4>
-                    <button class="btn btn-primary" @click="showAddModal">
-                        <i class="fas fa-plus"></i> Add New Parking Lot
-                    </button>
-                </div>
-                <div class="row">
-                    <div v-for="lot in parkingLots" :key="lot.id" class="col-md-6 col-lg-4 mb-3">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white py-2">
-                                <h6 class="mb-0">{{ lot.prime_location_name }}</h6>
-                            </div>
-                            <div class="card-body p-3">
-                                <p class="card-text">{{ lot.address }}</p>
-                                <p><strong>Price:</strong> ₹{{ Math.round(lot.price) }}/hour</p>
-                                <p><strong>Available:</strong> {{ lot.available_spots }}/{{ lot.number_of_spots }} spots</p>
-                                <div class="btn-group w-100">
-                                    <button class="btn btn-sm btn-outline-primary" @click="editLot(lot)">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" @click="deleteLot(lot.id)">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-if="!parkingLots || parkingLots.length === 0" class="col-12">
-                        <div class="text-center py-5">
-                            <i class="fas fa-parking fa-3x text-muted mb-3"></i>
-                            <h5>No parking lots found</h5>
-                            <p>Click "Add New Parking Lot" to get started.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Users Section -->
-            <div v-if="activeSection === 'users' && !loading">
-                <h4 class="mb-3">Users</h4>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Name</th>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Total Reservations</th>
-                                <th>Total Spent</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="user in users" :key="user.id">
-                                <td>{{ user.name || user.username }}</td>
-                                <td>{{ user.username }}</td>
-                                <td>{{ user.email || 'N/A' }}</td>
-                                <td>{{ user.total_reservations || 0 }}</td>
-                                <td>₹{{ Math.round(user.total_revenue || 0) }}</td>
-                                <td>
-                                    <span v-if="user.current_spot" class="badge bg-success">Active</span>
-                                    <span v-else class="badge bg-secondary">Inactive</span>
-                                </td>
-                            </tr>
-                            <tr v-if="!users || users.length === 0">
-                                <td colspan="6" class="text-center py-4">
-                                    <i class="fas fa-users fa-2x text-muted mb-2"></i>
-                                    <p class="text-muted mb-0">No users found</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Reservations Section -->
-            <div v-if="activeSection === 'reservations' && !loading">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4>Reservations</h4>
-                    <div class="btn-group">
-                        <button class="btn btn-sm" :class="reservationFilter === 'all' ? 'btn-primary' : 'btn-outline-primary'" @click="reservationFilter = 'all'">All</button>
-                        <button class="btn btn-sm" :class="reservationFilter === 'active' ? 'btn-success' : 'btn-outline-success'" @click="reservationFilter = 'active'">Active</button>
-                        <button class="btn btn-sm" :class="reservationFilter === 'completed' ? 'btn-secondary' : 'btn-outline-secondary'" @click="reservationFilter = 'completed'">Completed</button>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>User</th>
-                                <th>Location</th>
-                                <th>Vehicle</th>
-                                <th>Start Time</th>
-                                <th>Duration</th>
-                                <th>Cost</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="reservation in filteredReservations" :key="reservation.id">
-                                <td><strong>{{ reservation.username }}</strong></td>
-                                <td>{{ reservation.parking_lot_name }}</td>
-                                <td><span class="badge bg-info">{{ reservation.vehicle_number }}</span></td>
-                                <td>{{ formatDateTime(reservation.parking_timestamp) }}</td>
-                                <td>{{ reservation.duration_hours }}h</td>
-                                <td><strong class="text-success">₹{{ Math.round(reservation.parking_cost || 0) }}</strong></td>
-                                <td>
-                                    <span v-if="reservation.status === 'active'" class="badge bg-success">
-                                        <i class="fas fa-clock"></i> Active
-                                    </span>
-                                    <span v-else class="badge bg-secondary">
-                                        <i class="fas fa-check"></i> Completed
-                                    </span>
-                                </td>
-                                <td>
-                                    <button v-if="reservation.status === 'active'" class="btn btn-sm btn-outline-danger" @click="cancelReservation(reservation.id)">
-                                        <i class="fas fa-times"></i> Cancel
-                                    </button>
-                                    <button v-else class="btn btn-sm btn-outline-info" disabled>
-                                        <i class="fas fa-check"></i> Done
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr v-if="!filteredReservations || filteredReservations.length === 0">
-                                <td colspan="8" class="text-center py-4">
-                                    <i class="fas fa-calendar-check fa-2x text-muted mb-2"></i>
-                                    <p class="text-muted mb-0">No reservations found</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-
-
-            <!-- Add/Edit Modal -->
-            <div v-if="showModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1050;">
-                <div style="max-width: 500px; width: 90%;">
-                    <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <div style="padding: 1rem; border-bottom: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center;">
-                            <h5 class="modal-title">{{ editingLot ? 'Edit Parking Lot' : 'Add New Parking Lot' }}</h5>
-                            <button type="button" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;" @click="hideModal">&times;</button>
-                        </div>
-                        <div style="padding: 1rem;">
-                            <div v-if="validationErrors.length" class="alert alert-danger">
-                                <ul class="mb-0">
-                                    <li v-for="error in validationErrors" :key="error">{{ error }}</li>
-                                </ul>
-                            </div>
-                            <form @submit.prevent="submitForm">
-                                <div class="mb-3">
-                                    <label class="form-label">Location Name</label>
-                                    <input type="text" class="form-control" v-model="form.prime_location_name" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Address</label>
-                                    <textarea class="form-control" v-model="form.address" required></textarea>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Price per Hour (₹)</label>
-                                        <input type="number" class="form-control" v-model="form.price" required min="1">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">PIN Code</label>
-                                        <input type="text" class="form-control" v-model="form.pin_code" required>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Number of Spots</label>
-                                    <input type="number" class="form-control" v-model="form.number_of_spots" required min="1">
-                                </div>
-                            </form>
-                        </div>
-                        <div style="padding: 1rem; border-top: 1px solid #dee2e6; display: flex; justify-content: flex-end; gap: 0.5rem;">
-                            <button type="button" class="btn btn-secondary" @click="hideModal">Cancel</button>
-                            <button type="button" class="btn btn-primary" @click="submitForm" :disabled="submitting">
-                                <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                                {{ editingLot ? 'Update' : 'Create' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <a href="/"><div class="brand-icon"><i class="fas fa-car"></i></div>ParkEase</a>
         </div>
-    `,
-    
-    data() {
-        return {
-            activeSection: 'parking',
-            loading: false,
-            error: null,
-            successMessage: null,
-            
-            // Data
-            parkingLots: [],
-            users: [],
-            reservations: [],
-            
+        <div class="sidebar-nav" style="padding-top:.75rem;">
+          <span class="sidebar-section">Management</span>
+          <button class="nav-btn" :class="{ active: activeSection==='parking' }" @click="setSection('parking')">
+            <span class="nav-icon"><i class="fas fa-parking"></i></span>Parking Lots
+          </button>
+          <button class="nav-btn" :class="{ active: activeSection==='users' }" @click="setSection('users')">
+            <span class="nav-icon"><i class="fas fa-users"></i></span>Users
+          </button>
+          <button class="nav-btn" :class="{ active: activeSection==='reservations' }" @click="setSection('reservations')">
+            <span class="nav-icon"><i class="fas fa-calendar-check"></i></span>Reservations
+          </button>
+          <span class="sidebar-section" style="margin-top:.5rem;">Reports</span>
+          <button class="nav-btn" @click="$router.push('/analytics')">
+            <span class="nav-icon"><i class="fas fa-chart-bar"></i></span>Analytics
+          </button>
+          <button class="nav-btn" @click="exportCSV">
+            <span class="nav-icon"><i class="fas fa-download"></i></span>Export CSV
+          </button>
+        </div>
+        <div class="sidebar-footer">
+          <button @click="logout"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+        </div>
+      </aside>
 
-            
-            // Modal
-            showModal: false,
-            editingLot: false,
-            editingLotId: null,
-            submitting: false,
-            validationErrors: [],
-            
-            // Form
-            form: {
-                prime_location_name: '',
-                address: '',
-                price: '',
-                pin_code: '',
-                number_of_spots: ''
-            },
-            
-            // Filters
-            reservationFilter: 'all'
-        };
-    },
-    
-    computed: {
-        filteredReservations() {
-            if (!this.reservations) return [];
-            
-            let filtered = [...this.reservations];
-            
-            if (this.reservationFilter === 'active') {
-                filtered = filtered.filter(r => r.status === 'active');
-            } else if (this.reservationFilter === 'completed') {
-                filtered = filtered.filter(r => r.status === 'completed');
-            }
-            
-            return filtered;
-        },
-        
+      <!-- Main -->
+      <div class="main-content">
+        <div class="top-bar">
+          <div>
+            <div class="top-bar-title">
+              {{ activeSection === 'parking' ? 'Parking Lots' : activeSection === 'users' ? 'Users' : 'Reservations' }}
+            </div>
+            <div class="top-bar-subtitle">Admin Dashboard</div>
+          </div>
+          <button v-if="activeSection==='parking'" class="btn btn-primary btn-sm" @click="showAddModal">
+            <i class="fas fa-plus"></i> Add Lot
+          </button>
+        </div>
 
-    },
-    
-    methods: {
-        async setActiveSection(section) {
-            this.activeSection = section;
-            this.clearMessages();
-            await this.loadData();
-        },
-        
-        async loadData() {
-            this.loading = true;
-            this.error = null;
-            
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    this.error = 'Please login again';
-                    this.$router.push('/login');
-                    return;
-                }
-                
-                const endpoints = {
-                    parking: '/api/admin/parking-lots',
-                    users: '/api/admin/users',
-                    reservations: '/api/admin/reservations'
-                };
-                
-                const response = await fetch(endpoints[this.activeSection], {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (this.activeSection === 'parking') {
-                        this.parkingLots = data.lots || [];
-                    } else if (this.activeSection === 'users') {
-                        this.users = data.users || [];
-                    } else if (this.activeSection === 'reservations') {
-                        this.reservations = data.reservations || [];
-                    } else {
-                        this[this.activeSection] = data;
-                    }
-                } else if (response.status === 401 || response.status === 403) {
-                    localStorage.removeItem('token');
-                    this.$router.push('/login');
-                } else {
-                    this.error = `Failed to load ${this.activeSection} data`;
-                }
-            } catch (error) {
-                this.error = `Network error loading ${this.activeSection} data`;
-            } finally {
-                this.loading = false;
-            }
-        },
-        
+        <div class="page-content">
 
-        
-        retryLoad() {
-            this.loadData();
-        },
-        
-        // Modal methods
-        showAddModal() {
-            this.resetForm();
-            this.showModal = true;
-        },
-        
-        editLot(lot) {
-            this.editingLot = true;
-            this.editingLotId = lot.id;
-            Object.assign(this.form, lot);
-            this.showModal = true;
-        },
-        
-        hideModal() {
-            this.showModal = false;
-            this.resetForm();
-        },
-        
-        resetForm() {
-            this.editingLot = false;
-            this.editingLotId = null;
-            this.validationErrors = [];
-            this.form = {
-                prime_location_name: '',
-                address: '',
-                price: '',
-                pin_code: '',
-                number_of_spots: ''
-            };
-        },
-        
-        async submitForm() {
-            this.submitting = true;
-            this.validationErrors = [];
-            
-            try {
-                const url = this.editingLot ? `/api/admin/parking-lots/${this.editingLotId}` : '/api/admin/parking-lots';
-                const method = this.editingLot ? 'PUT' : 'POST';
-                
-                const response = await fetch(url, {
-                    method,
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        prime_location_name: this.form.prime_location_name,
-                        price: parseFloat(this.form.price),
-                        address: this.form.address,
-                        pin_code: this.form.pin_code,
-                        number_of_spots: parseInt(this.form.number_of_spots)
-                    })
-                });
-                
-                if (response.ok) {
-                    this.successMessage = `Parking lot ${this.editingLot ? 'updated' : 'created'} successfully`;
-                    this.hideModal();
-                    await this.loadData();
-                } else {
-                    const result = await response.json();
-                    this.validationErrors = [result.message || 'Failed to save parking lot'];
-                }
-            } catch (error) {
-                this.validationErrors = ['Network error saving parking lot'];
-            } finally {
-                this.submitting = false;
-            }
-        },
-        
-        async deleteLot(id) {
-            if (!confirm('Are you sure you want to delete this parking lot?')) return;
-            
-            try {
-                const response = await fetch(`/api/admin/parking-lots/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                });
-                
-                if (response.ok) {
-                    this.successMessage = 'Parking lot deleted successfully';
-                    await this.loadData();
-                } else {
-                    this.error = 'Failed to delete parking lot';
-                }
-            } catch (error) {
-                this.error = 'Network error deleting parking lot';
-            }
-        },
-        
-        async cancelReservation(id) {
-            if (!confirm('Are you sure you want to cancel this reservation?')) return;
-            
-            try {
-                const response = await fetch(`/api/admin/cancel-booking/${id}`, {
-                    method: 'PUT',
-                    headers: { 
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    this.successMessage = 'Reservation cancelled successfully';
-                    await this.loadData();
-                } else {
-                    this.error = 'Failed to cancel reservation';
-                }
-            } catch (error) {
-                this.error = 'Network error cancelling reservation';
-            }
-        },
-        
-        // Utility methods
-        formatDateTime(dateString) {
-            if (!dateString) return 'N/A';
-            return new Date(dateString).toLocaleString();
-        },
-        
-        clearMessages() {
-            this.error = null;
-            this.successMessage = null;
-        },
-        
-        logout() {
-            localStorage.removeItem('token');
-            this.$router.push('/login');
-        }
-    },
-    
-    async mounted() {
-        // Check if there's a section specified in query parameters
-        const section = this.$route.query.section;
-        if (section && ['users', 'reservations', 'parking'].includes(section)) {
-            this.activeSection = section;
-        }
-        await this.loadData();
+          <!-- Stats -->
+          <div class="stats-row" v-if="stats">
+            <div class="stat-card">
+              <div class="stat-icon indigo"><i class="fas fa-parking"></i></div>
+              <div class="stat-body">
+                <div class="stat-value">{{ stats.total_lots }}</div>
+                <div class="stat-label">Parking Lots</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+              <div class="stat-body">
+                <div class="stat-value">{{ stats.total_users }}</div>
+                <div class="stat-label">Registered Users</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-car"></i></div>
+              <div class="stat-body">
+                <div class="stat-value">{{ stats.active_reservations }}</div>
+                <div class="stat-label">Active Now</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon amber"><i class="fas fa-rupee-sign"></i></div>
+              <div class="stat-body">
+                <div class="stat-value">₹{{ stats.total_revenue }}</div>
+                <div class="stat-label">Total Revenue</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alerts -->
+          <div v-if="error" class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> {{ error }}
+            <button class="btn btn-sm btn-ghost" style="margin-left:.5rem;" @click="retryLoad"><i class="fas fa-redo"></i></button>
+          </div>
+          <div v-if="successMessage" class="alert alert-success"><i class="fas fa-check-circle"></i> {{ successMessage }}</div>
+
+          <!-- Loading -->
+          <div v-if="loading" style="text-align:center;padding:4rem;">
+            <div class="spinner spinner-dark spinner-lg" style="margin:0 auto 1rem;"></div>
+            <p class="text-muted text-sm">Loading…</p>
+          </div>
+
+          <!-- ── Parking Lots ── -->
+          <div v-if="activeSection==='parking' && !loading">
+            <div v-if="parkingLots.length === 0" class="empty-state">
+              <i class="fas fa-parking"></i>
+              <h6>No parking lots yet</h6>
+              <p>Add your first lot to get started.</p>
+              <button class="btn btn-primary btn-sm" @click="showAddModal"><i class="fas fa-plus"></i> Add Lot</button>
+            </div>
+            <div v-else class="grid-3">
+              <div v-for="lot in parkingLots" :key="lot.id" class="lot-card">
+                <div class="lot-card-header">
+                  <div class="flex items-center justify-between">
+                    <h6 class="lot-name">{{ lot.prime_location_name }}</h6>
+                    <span class="lot-badge" :class="lot.available_spots > 0 ? 'available' : 'full'">
+                      {{ lot.available_spots > 0 ? lot.available_spots + ' free' : 'Full' }}
+                    </span>
+                  </div>
+                </div>
+                <div class="lot-card-body">
+                  <div class="lot-meta">
+                    <div class="lot-meta-item"><i class="fas fa-map-marker-alt"></i> {{ lot.address }}</div>
+                    <div class="lot-meta-item"><i class="fas fa-map-pin"></i> PIN {{ lot.pin_code }}</div>
+                  </div>
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="lot-price">₹{{ Math.round(lot.price) }}/hr</span>
+                    <span class="text-sm text-muted">{{ lot.available_spots }}/{{ lot.number_of_spots }} spots</span>
+                  </div>
+                  <div class="avail-bar">
+                    <div class="avail-bar-fill"
+                      :class="lot.available_spots/lot.number_of_spots > .5 ? 'high' : lot.available_spots/lot.number_of_spots > .2 ? 'medium' : 'low'"
+                      :style="'width:' + (lot.available_spots/lot.number_of_spots*100) + '%'"></div>
+                  </div>
+                </div>
+                <div class="lot-card-footer flex gap-2">
+                  <button class="btn btn-ghost btn-sm" style="flex:1;" @click="editLot(lot)"><i class="fas fa-edit"></i> Edit</button>
+                  <button class="btn btn-sm" style="flex:1;background:var(--danger-light);color:var(--danger);" @click="deleteLot(lot.id)"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Users ── -->
+          <div v-if="activeSection==='users' && !loading">
+            <div class="card">
+              <div class="card-body" style="padding:0;">
+                <div v-if="users.length === 0" class="empty-state">
+                  <i class="fas fa-users"></i><h6>No users found</h6>
+                </div>
+                <div v-else style="overflow-x:auto;">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th><th>Username</th><th>Email</th>
+                        <th>Reservations</th><th>Total Spent</th><th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="u in users" :key="u.id">
+                        <td class="fw-600">{{ u.name || u.username }}</td>
+                        <td class="text-muted">@{{ u.username }}</td>
+                        <td class="text-muted text-sm">{{ u.email || '—' }}</td>
+                        <td>{{ u.total_reservations || 0 }}</td>
+                        <td class="fw-600">₹{{ Math.round(u.total_revenue || 0) }}</td>
+                        <td>
+                          <span class="badge" :class="u.current_spot ? 'badge-green' : 'badge-gray'">
+                            <i class="fas fa-circle" style="font-size:.45rem;"></i>
+                            {{ u.current_spot ? 'Parked' : 'Inactive' }}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Reservations ── -->
+          <div v-if="activeSection==='reservations' && !loading">
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">All Reservations</span>
+                <div class="pill-group">
+                  <button class="pill" :class="reservationFilter==='all' ? 'active-all' : ''" @click="reservationFilter='all'">All</button>
+                  <button class="pill" :class="reservationFilter==='active' ? 'active-avail' : ''" @click="reservationFilter='active'">Active</button>
+                  <button class="pill" :class="reservationFilter==='completed' ? 'active-full' : ''" @click="reservationFilter='completed'">Completed</button>
+                </div>
+              </div>
+              <div class="card-body" style="padding:0;">
+                <div v-if="filteredReservations.length === 0" class="empty-state">
+                  <i class="fas fa-calendar-check"></i><h6>No reservations found</h6>
+                </div>
+                <div v-else style="overflow-x:auto;">
+                  <table class="data-table">
+                    <thead>
+                      <tr><th>User</th><th>Location</th><th>Vehicle</th><th>Check-in</th><th>Duration</th><th>Cost</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="r in filteredReservations" :key="r.id">
+                        <td class="fw-600">{{ r.username }}</td>
+                        <td class="text-sm text-muted">{{ r.parking_lot_name }}</td>
+                        <td><span class="badge badge-indigo">{{ r.vehicle_number }}</span></td>
+                        <td class="text-sm">{{ formatDateTime(r.parking_timestamp) }}</td>
+                        <td class="text-sm">{{ r.duration_hours }}h</td>
+                        <td class="fw-600" style="color:var(--success);">₹{{ Math.round(r.parking_cost || 0) }}</td>
+                        <td>
+                          <span class="badge" :class="r.status==='active' ? 'badge-green' : 'badge-gray'">
+                            <i class="fas fa-circle" style="font-size:.45rem;"></i>
+                            {{ r.status === 'active' ? 'Active' : 'Done' }}
+                          </span>
+                        </td>
+                        <td>
+                          <button v-if="r.status==='active'" class="btn btn-sm" style="background:var(--danger-light);color:var(--danger);" @click="cancelReservation(r.id)">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /page-content -->
+      </div><!-- /main-content -->
+
+      <!-- Add/Edit Modal -->
+      <div v-if="showModal" class="modal-backdrop" @click.self="hideModal">
+        <div class="modal-box">
+          <div class="modal-header">
+            <span class="modal-title">{{ editingLot ? 'Edit Parking Lot' : 'Add New Parking Lot' }}</span>
+            <button class="modal-close" @click="hideModal"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="modal-body">
+            <div v-if="validationErrors.length" class="alert alert-danger">
+              <ul style="margin:0;padding-left:1.25rem;">
+                <li v-for="e in validationErrors" :key="e">{{ e }}</li>
+              </ul>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Location Name</label>
+              <input class="form-control" v-model="form.prime_location_name" placeholder="e.g. MG Road Parking" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Address</label>
+              <textarea class="form-control" v-model="form.address" rows="2" required></textarea>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Price per Hour (₹)</label>
+                <input class="form-control" type="number" v-model="form.price" min="1" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">PIN Code</label>
+                <input class="form-control" v-model="form.pin_code" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Number of Spots</label>
+              <input class="form-control" type="number" v-model="form.number_of_spots" min="1" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" @click="hideModal">Cancel</button>
+            <button class="btn btn-primary" @click="submitForm" :disabled="submitting">
+              <span v-if="submitting" class="spinner"></span>
+              <i v-else class="fas fa-save"></i>
+              {{ editingLot ? 'Update' : 'Create' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  `,
+
+  data() {
+    return {
+      activeSection: 'parking',
+      loading: false,
+      error: null,
+      successMessage: null,
+      parkingLots: [],
+      users: [],
+      reservations: [],
+      stats: null,
+      showModal: false,
+      editingLot: false,
+      editingLotId: null,
+      submitting: false,
+      validationErrors: [],
+      form: { prime_location_name: '', address: '', price: '', pin_code: '', number_of_spots: '' },
+      reservationFilter: 'all'
+    };
+  },
+
+  computed: {
+    filteredReservations() {
+      if (!this.reservations) return [];
+      if (this.reservationFilter === 'active') return this.reservations.filter(r => r.status === 'active');
+      if (this.reservationFilter === 'completed') return this.reservations.filter(r => r.status === 'completed');
+      return this.reservations;
     }
-}; 
+  },
+
+  methods: {
+    async setSection(s) { this.activeSection = s; this.clearMessages(); await this.loadData(); },
+    async loadData() {
+      this.loading = true; this.error = null;
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) { this.$router.push('/login'); return; }
+        const endpoints = { parking: '/api/admin/parking-lots', users: '/api/admin/users', reservations: '/api/admin/reservations' };
+        const res = await fetch(endpoints[this.activeSection], { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) {
+          const data = await res.json();
+          if (this.activeSection === 'parking') this.parkingLots = data.lots || [];
+          else if (this.activeSection === 'users') this.users = data.users || [];
+          else this.reservations = data.reservations || [];
+        } else if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem('token'); this.$router.push('/login');
+        } else { this.error = `Failed to load ${this.activeSection} data`; }
+      } catch { this.error = 'Network error'; }
+      finally { this.loading = false; }
+    },
+    async loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        if (res.ok) this.stats = await res.json();
+      } catch {}
+    },
+    retryLoad() { this.loadData(); },
+    showAddModal() { this.resetForm(); this.showModal = true; },
+    editLot(lot) { this.editingLot = true; this.editingLotId = lot.id; Object.assign(this.form, lot); this.showModal = true; },
+    hideModal() { this.showModal = false; this.resetForm(); },
+    resetForm() {
+      this.editingLot = false; this.editingLotId = null; this.validationErrors = [];
+      this.form = { prime_location_name: '', address: '', price: '', pin_code: '', number_of_spots: '' };
+    },
+    async submitForm() {
+      this.submitting = true; this.validationErrors = [];
+      try {
+        const url = this.editingLot ? `/api/admin/parking-lots/${this.editingLotId}` : '/api/admin/parking-lots';
+        const res = await fetch(url, {
+          method: this.editingLot ? 'PUT' : 'POST',
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...this.form, price: parseFloat(this.form.price), number_of_spots: parseInt(this.form.number_of_spots) })
+        });
+        if (res.ok) {
+          this.successMessage = `Parking lot ${this.editingLot ? 'updated' : 'created'} successfully`;
+          this.hideModal(); await this.loadData(); await this.loadStats();
+        } else {
+          const r = await res.json(); this.validationErrors = [r.message || 'Failed to save'];
+        }
+      } catch { this.validationErrors = ['Network error']; }
+      finally { this.submitting = false; }
+    },
+    async deleteLot(id) {
+      if (!confirm('Delete this parking lot?')) return;
+      try {
+        const res = await fetch(`/api/admin/parking-lots/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        if (res.ok) { this.successMessage = 'Parking lot deleted'; await this.loadData(); await this.loadStats(); }
+        else this.error = 'Failed to delete';
+      } catch { this.error = 'Network error'; }
+    },
+    async cancelReservation(id) {
+      if (!confirm('Cancel this reservation?')) return;
+      try {
+        const res = await fetch(`/api/admin/cancel-booking/${id}`, {
+          method: 'PUT', headers: { Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }
+        });
+        if (res.ok) { this.successMessage = 'Reservation cancelled'; await this.loadData(); }
+        else this.error = 'Failed to cancel';
+      } catch { this.error = 'Network error'; }
+    },
+    async exportCSV() {
+      try {
+        const res = await fetch('/api/admin/export-csv', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        if (res.ok) {
+          const blob = await res.blob();
+          const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+          a.download = `admin_report_${new Date().toISOString().slice(0,10)}.csv`;
+          a.click();
+        }
+      } catch {}
+    },
+    formatDateTime(s) { return s ? new Date(s).toLocaleString() : '—'; },
+    clearMessages() { this.error = null; this.successMessage = null; },
+    logout() { localStorage.removeItem('token'); this.$router.push('/login'); }
+  },
+
+  async mounted() {
+    const s = this.$route.query.section;
+    if (s && ['users','reservations','parking'].includes(s)) this.activeSection = s;
+    await Promise.all([this.loadData(), this.loadStats()]);
+  }
+};

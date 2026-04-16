@@ -1,276 +1,187 @@
 window.UserBookings = {
-    template: `
-        <div class="min-vh-100 bg-light">
-            <!-- Header -->
-            <nav class="navbar navbar-expand-lg" style="background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);">
-                <div class="container-fluid px-4">
-                    <a class="navbar-brand text-white fw-bold" href="#">
-                        <i class="fas fa-car me-2"></i> Vehicle Parking App
-                    </a>
-                    <div class="navbar-nav mx-auto">
-                    </div>
-                    <div class="navbar-nav ms-auto">
-                        <button class="btn btn-outline-light" @click="logout">
-                            <i class="fas fa-sign-out-alt me-1"></i> Logout
-                        </button>
-                    </div>
-                </div>
-            </nav>
+  template: `
+    <div class="app-shell">
 
-            <!-- Navigation -->
-            <div class="container-fluid px-4 py-3" style="background: rgba(255,255,255,0.9); border-bottom: 1px solid rgba(0,0,0,0.1);">
-                <div class="d-flex justify-content-center">
-                    <div class="btn-group" role="group">
-                        <router-link to="/dashboard" class="btn btn-outline-primary">
-                            <i class="fas fa-home me-2"></i>Dashboard
-                        </router-link>
-                        <button type="button" class="btn btn-primary">
-                            <i class="fas fa-calendar-check me-2"></i>My Bookings
-                        </button>
-                        <router-link to="/analytics" class="btn btn-outline-primary">
-                            <i class="fas fa-chart-line me-2"></i>Analytics
-                        </router-link>
-                        <router-link to="/profile" class="btn btn-outline-primary">
-                            <i class="fas fa-user me-2"></i>Profile
-                        </router-link>
-                    </div>
-                </div>
-            </div>
-
-            <div class="container py-4">
-                <!-- Page Title -->
-                <div class="text-center mb-4">
-                    <h2 class="fw-bold text-dark mb-2">My Parking Bookings</h2>
-                    <p class="text-muted">Track your active reservations and booking history</p>
-                    
-                    <!-- Export Button -->
-                    <div class="mt-3">
-                        <button class="btn btn-success" @click="exportToCSV">
-                            <i class="fas fa-download me-2"></i>Export My History to CSV
-                        </button>
-                    </div>
-                    
-
-                </div>
-                
-                <!-- Active Bookings Section -->
-                <div class="mb-5">
-                    <div class="d-flex align-items-center mb-3">
-                        <span class="badge bg-success me-3">
-                            <i class="fas fa-clock me-1"></i> Active
-                        </span>
-                        <h4 class="mb-0">Current Bookings</h4>
-                    </div>
-                    
-                    <div v-if="activeBookings.length === 0" class="text-center py-3">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body py-3">
-                                <i class="fas fa-calendar-plus fa-2x text-muted mb-2"></i>
-                                <h6 class="text-muted">No Active Bookings</h6>
-                                <p class="text-muted">You don't have any active parking reservations at the moment.</p>
-                                <router-link to="/dashboard" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus me-1"></i>Book Parking
-                                </router-link>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div v-for="booking in activeBookings" :key="booking.id" class="col-md-6 col-lg-4 mb-3">
-                                                    <div class="card h-100 shadow-sm">
-                            <div class="card-header bg-success text-white py-2">
-                                <h6 class="card-title mb-0 fw-bold">{{ booking.parking_lot.prime_location_name }}</h6>
-                            </div>
-                            <div class="card-body p-3">
-                                    <div class="mb-2">
-                                        <small class="text-muted fw-bold">ADDRESS</small>
-                                        <p class="mb-0">{{ booking.parking_lot.address }}</p>
-                                    </div>
-                                    
-                                    <div class="mb-2">
-                                        <small class="text-muted fw-bold">VEHICLE</small>
-                                        <p class="mb-0 fw-bold">{{ booking.vehicle_number }}</p>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <small class="text-muted fw-bold">CHECK-IN</small>
-                                        <p class="mb-0">{{ formatDate(booking.parking_timestamp) }}</p>
-                                    </div>
-                                    
-                                    <button class="btn btn-warning w-100" @click="endBooking(booking.id)">
-                                        <i class="fas fa-stop-circle me-1"></i>End Booking
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Booking History Section -->
-                <div>
-                    <div class="d-flex align-items-center mb-3">
-                        <span class="badge bg-info me-3">
-                            <i class="fas fa-history me-1"></i> History
-                        </span>
-                        <h4 class="mb-0">Past Bookings</h4>
-                    </div>
-                    
-                    <div v-if="bookingHistory.length === 0" class="text-center py-3">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body py-3">
-                                <i class="fas fa-history fa-2x text-muted mb-2"></i>
-                                <h6 class="text-muted">No Booking History</h6>
-                                <p class="text-muted">Your completed bookings will appear here.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div v-else class="table-responsive">
-                        <table class="table table-hover table-striped">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th scope="col"><i class="fas fa-map-marker-alt me-2"></i>Location</th>
-                                    <th scope="col"><i class="fas fa-home me-2"></i>Address</th>
-                                    <th scope="col"><i class="fas fa-car me-2"></i>Vehicle</th>
-                                    <th scope="col"><i class="fas fa-clock me-2"></i>Check-in</th>
-                                    <th scope="col"><i class="fas fa-clock me-2"></i>Check-out</th>
-                                    <th scope="col"><i class="fas fa-rupee-sign me-2"></i>Cost</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="booking in bookingHistory" :key="booking.id">
-                                    <td class="fw-bold">{{ booking.parking_lot.prime_location_name }}</td>
-                                    <td class="text-muted">{{ booking.parking_lot.address }}</td>
-                                    <td><span class="badge bg-primary">{{ booking.vehicle_number }}</span></td>
-                                    <td>{{ formatDate(booking.parking_timestamp) }}</td>
-                                    <td>{{ formatDate(booking.leaving_timestamp) }}</td>
-                                    <td><span class="badge bg-success">₹{{ Math.round(booking.parking_cost) }}</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <a href="/"><div class="brand-icon"><i class="fas fa-car"></i></div>ParkEase</a>
         </div>
-    `,
-    data() {
-        return {
-            activeBookings: [],
-            bookingHistory: [],
-            userName: ''
-        };
-    },
-    methods: {
-        async fetchBookings() {
-            try {
-                const response = await fetch('/api/bookings', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.bookings) {
-                        // Transform API response and separate active/completed bookings
-                        const transformedBookings = data.bookings.map(booking => ({
-                            id: booking.id,
-                            parking_timestamp: booking.started_at,
-                            leaving_timestamp: booking.ended_at,
-                            parking_cost: parseFloat(booking.cost.replace(/[₹,]/g, '')) || 0,
-                            vehicle_number: booking.vehicle_number,
-                            parking_lot: {
-                                prime_location_name: booking.location.name,
-                                address: booking.location.address
-                            },
-                            status: booking.status
-                        }));
-                        
-                        this.activeBookings = transformedBookings.filter(booking => booking.status === 'active');
-                        this.bookingHistory = transformedBookings.filter(booking => booking.status === 'completed');
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching bookings:', error);
-            }
-        },
-        async endBooking(bookingId) {
-            if (confirm('Are you sure you want to end this booking?')) {
-                try {
-                    const response = await fetch(`/api/reservations/${bookingId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
-                    });
-                    if (response.ok) {
-                        const result = await response.json();
-                        const cost = result.bill_summary ? result.bill_summary.total_cost : 'N/A';
-                        alert(`Booking ended. Total cost: ${cost}`);
-                        this.fetchBookings();
-                    } else {
-                        const error = await response.json();
-                        alert(error.message || 'Failed to end booking');
-                    }
-                } catch (error) {
-                    console.error('Error ending booking:', error);
-                    alert('Failed to end booking');
-                }
-            }
-        },
-        formatDate(dateString) {
-            return new Date(dateString).toLocaleString();
-        },
-        logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('isAdmin');
-            this.$router.push('/login');
-        },
-        async fetchUserName() {
-            try {
-                const response = await fetch('/api/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (response.ok) {
-                    const profile = await response.json();
-                    this.userName = profile.name || profile.username;
-                }
-            } catch (error) {
-                console.error('Error fetching user name:', error);
-            }
-        },
+        <div class="sidebar-nav" style="padding-top:.5rem;">
+          <span class="sidebar-section">Menu</span>
+          <router-link to="/dashboard"><span class="nav-icon"><i class="fas fa-home"></i></span>Dashboard</router-link>
+          <a href="#" class="active"><span class="nav-icon"><i class="fas fa-calendar-check"></i></span>My Bookings</a>
+          <router-link to="/analytics"><span class="nav-icon"><i class="fas fa-chart-line"></i></span>Analytics</router-link>
+          <router-link to="/profile"><span class="nav-icon"><i class="fas fa-user"></i></span>Profile</router-link>
+        </div>
+        <div class="sidebar-footer">
+          <button @click="logout"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+        </div>
+      </aside>
 
-        async exportToCSV() {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await fetch('/api/user/export-csv', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `my_parking_history_${new Date().toISOString().slice(0,19).replace(/[:.]/g, '-')}.csv`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    window.URL.revokeObjectURL(url);
-                } else {
-                    alert('Failed to export CSV. Please try again.');
-                }
-            } catch (error) {
-                alert('Error exporting CSV. Please try again.');
-            }
-        }
+      <!-- Main -->
+      <div class="main-content">
+        <div class="top-bar">
+          <div>
+            <div class="top-bar-title">My Bookings</div>
+            <div class="top-bar-subtitle">Active &amp; completed reservations</div>
+          </div>
+          <button class="btn btn-success btn-sm" @click="exportToCSV">
+            <i class="fas fa-download"></i> Export CSV
+          </button>
+        </div>
+
+        <div class="page-content">
+
+          <!-- Active Bookings -->
+          <div style="margin-bottom:2rem;">
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">
+              <span class="badge badge-green"><i class="fas fa-circle" style="font-size:.45rem;"></i> Live</span>
+              <h5 style="margin:0;font-weight:700;">Current Bookings</h5>
+            </div>
+
+            <div v-if="activeBookings.length === 0" class="empty-state" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+              <i class="fas fa-calendar-plus"></i>
+              <h6>No active bookings</h6>
+              <p>You're not currently parked anywhere.</p>
+              <router-link to="/dashboard" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Book Parking</router-link>
+            </div>
+
+            <div class="grid-3">
+              <div v-for="b in activeBookings" :key="b.id" class="booking-card">
+                <div class="booking-card-top">
+                  <div>
+                    <div style="font-size:.95rem;font-weight:700;">{{ b.parking_lot.prime_location_name }}</div>
+                    <div class="text-sm text-muted">{{ b.parking_lot.address }}</div>
+                  </div>
+                  <span class="badge badge-green"><i class="fas fa-circle" style="font-size:.45rem;"></i> Live</span>
+                </div>
+                <div class="booking-card-body">
+                  <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;">
+                    <span class="badge badge-indigo"><i class="fas fa-car"></i> {{ b.vehicle_number }}</span>
+                    <span class="badge badge-gray"><i class="fas fa-clock"></i> {{ formatDate(b.parking_timestamp) }}</span>
+                  </div>
+                  <div class="booking-timer">
+                    <div>
+                      <div class="timer-label">Elapsed</div>
+                      <div class="timer-value">{{ getLiveDuration(b.parking_timestamp) }}</div>
+                    </div>
+                    <div style="text-align:right;">
+                      <div class="timer-label">Est. Cost</div>
+                      <div class="timer-cost">₹{{ getLiveEstimatedCost(b) }}</div>
+                    </div>
+                  </div>
+                  <button class="btn btn-block" style="background:var(--warning-light);color:#92400e;" @click="endBooking(b.id)">
+                    <i class="fas fa-stop-circle"></i> End Booking
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- History -->
+          <div>
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">
+              <span class="badge badge-gray"><i class="fas fa-history"></i> History</span>
+              <h5 style="margin:0;font-weight:700;">Past Bookings</h5>
+            </div>
+
+            <div v-if="bookingHistory.length === 0" class="empty-state" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+              <i class="fas fa-history"></i>
+              <h6>No booking history</h6>
+              <p>Your completed bookings will appear here.</p>
+            </div>
+
+            <div v-else class="card">
+              <div class="card-body" style="padding:0;overflow-x:auto;">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Location</th><th>Address</th><th>Vehicle</th>
+                      <th>Check-in</th><th>Check-out</th><th>Cost</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="b in bookingHistory" :key="b.id">
+                      <td class="fw-600">{{ b.parking_lot.prime_location_name }}</td>
+                      <td class="text-sm text-muted">{{ b.parking_lot.address }}</td>
+                      <td><span class="badge badge-indigo">{{ b.vehicle_number }}</span></td>
+                      <td class="text-sm">{{ formatDate(b.parking_timestamp) }}</td>
+                      <td class="text-sm">{{ formatDate(b.leaving_timestamp) }}</td>
+                      <td><span class="badge badge-green">₹{{ Math.round(b.parking_cost) }}</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  `,
+
+  data() {
+    return { activeBookings: [], bookingHistory: [], currentTime: new Date(), timerInterval: null };
+  },
+
+  methods: {
+    getLiveDuration(t) {
+      const diff = this.currentTime - new Date(t);
+      if (diff < 0) return '0m';
+      const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
+      return h > 0 ? `${h}h ${m}m` : `${m}m`;
     },
-    mounted() {
-        this.fetchBookings();
-        this.fetchUserName();
-    }
-}; 
+    getLiveEstimatedCost(b) {
+      const hours = Math.max((this.currentTime - new Date(b.parking_timestamp)) / 3600000, 1);
+      return Math.round(hours * (b.hourly_rate || 0));
+    },
+    formatDate(s) { return s ? new Date(s).toLocaleString() : '—'; },
+    async fetchBookings() {
+      try {
+        const res = await fetch('/api/bookings', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.bookings) {
+            const mapped = data.bookings.map(b => ({
+              id: b.id,
+              parking_timestamp: b.started_at,
+              leaving_timestamp: b.ended_at,
+              parking_cost: parseFloat(b.cost.replace(/[₹,]/g,'')) || 0,
+              vehicle_number: b.vehicle_number,
+              hourly_rate: parseFloat((b.hourly_rate||'0').toString().replace(/[₹,/hour]/g,'')) || 0,
+              parking_lot: { prime_location_name: b.location.name, address: b.location.address },
+              status: b.status
+            }));
+            this.activeBookings = mapped.filter(b => b.status === 'active');
+            this.bookingHistory = mapped.filter(b => b.status === 'completed');
+          }
+        }
+      } catch {}
+    },
+    async endBooking(id) {
+      if (!confirm('End this booking?')) return;
+      try {
+        const res = await fetch(`/api/reservations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        if (res.ok) { const r = await res.json(); alert(`Booking ended. Cost: ${r.bill_summary?.total_cost ?? 'N/A'}`); this.fetchBookings(); }
+        else { const e = await res.json(); alert(e.message || 'Failed'); }
+      } catch { alert('Failed to end booking'); }
+    },
+    async exportToCSV() {
+      try {
+        const res = await fetch('/api/user/export-csv', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        if (res.ok) {
+          const a = document.createElement('a'); a.href = URL.createObjectURL(await res.blob());
+          a.download = `my_parking_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+        }
+      } catch {}
+    },
+    logout() { localStorage.removeItem('token'); localStorage.removeItem('isAdmin'); this.$router.push('/login'); }
+  },
+
+  mounted() {
+    this.fetchBookings();
+    this.timerInterval = setInterval(() => { this.currentTime = new Date(); }, 30000);
+  },
+  beforeDestroy() { if (this.timerInterval) clearInterval(this.timerInterval); }
+};

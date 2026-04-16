@@ -1,88 +1,110 @@
 {% extends "base.html" %}
-
-{% block title %}Vehicle Parking App{% endblock %}
+{% block title %}ParkEase — Smart Vehicle Parking{% endblock %}
 
 {% block content %}
 <div id="app">
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-gradient-blue">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-car"></i> Vehicle Parking App
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link active" href="/">Home</a>
-                <a class="nav-link" href="/user">User Portal</a>
-                <a class="nav-link" href="/admin">Admin Portal</a>
-            </div>
-        </div>
-    </nav>
-    
-    <!-- Hero Section -->
-    <div class="hero-section bg-light py-5">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold text-primary mb-3">Welcome to Vehicle Parking App!</h1>
-                    <p class="lead text-muted mb-4">Find, book, and manage parking spaces with ease. Smart parking solutions for modern urban life.</p>
-                    <div class="d-flex gap-3 justify-content-center justify-content-lg-start">
-                        <button @click="goTo('/admin')" class="btn btn-danger btn-lg">
-                            <i class="fas fa-user-shield me-2"></i>Admin Login
-                        </button>
-                        <button @click="goTo('/user')" class="btn btn-success btn-lg">
-                            <i class="fas fa-user me-2"></i>User Login
-                        </button>
-                    </div>
-                </div>
-                <div class="col-lg-6 text-center">
-                    <img src="{{ url_for('static', filename='images/parking.jpg') }}" 
-                         alt="Vehicle Parking Lot" 
-                         class="img-fluid rounded shadow-lg"
-                         style="max-height: 400px; width: auto;">
-                </div>
-            </div>
-        </div>
+
+  <!-- Nav -->
+  <nav class="landing-nav">
+    <a href="/" class="nav-brand">
+      <div class="nav-brand-icon"><i class="fas fa-car"></i></div>
+      ParkEase
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/user">User Portal</a>
+      <a href="/admin">Admin Portal</a>
     </div>
-    
-    <!-- Features Section -->
-    <div class="features-section py-5 bg-white">
-        <div class="container">
-            <div class="row text-center">
-                <div class="col-md-4 mb-4">
-                    <div class="feature-card p-4">
-                        <i class="fas fa-search fa-3x text-primary mb-3"></i>
-                        <h4 class="fw-bold">Find Parking</h4>
-                        <p class="text-muted">Discover available parking spaces near your destination with real-time availability.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-card p-4">
-                        <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
-                        <h4 class="fw-bold">Book Instantly</h4>
-                        <p class="text-muted">Reserve your parking spot in advance with just a few clicks. No more searching!</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-card p-4">
-                        <i class="fas fa-mobile-alt fa-3x text-info mb-3"></i>
-                        <h4 class="fw-bold">Manage Easily</h4>
-                        <p class="text-muted">Track your bookings, view history, and manage your parking preferences seamlessly.</p>
-                    </div>
-                </div>
-            </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-text">
+        <div class="hero-badge"><i class="fas fa-bolt"></i> Smart Urban Parking</div>
+        <h1>Park Smarter,<br><span>Drive Better.</span></h1>
+        <p>Find, reserve, and manage parking spaces in real-time. No circling, no stress — just seamless urban mobility.</p>
+        <div class="hero-actions">
+          <button @click="goTo('/user')" class="btn btn-primary btn-lg">
+            <i class="fas fa-user"></i> User Login
+          </button>
+          <button @click="goTo('/admin')" class="btn btn-ghost btn-lg" style="color:#fff;border-color:rgba(255,255,255,.25);">
+            <i class="fas fa-user-shield"></i> Admin Portal
+          </button>
         </div>
+      </div>
+      <div class="hero-image">
+        <img src="{{ url_for('static', filename='images/parking.jpg') }}" alt="Modern Parking Facility">
+      </div>
     </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="features-inner">
+      <div style="text-align:center;margin-bottom:3rem;">
+        <span class="section-tag">Why ParkEase</span>
+        <h2 class="section-title">Everything you need to park with confidence</h2>
+        <p class="section-sub">Built for modern cities and busy drivers.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:var(--primary-light);color:var(--primary);">
+            <i class="fas fa-search-location"></i>
+          </div>
+          <h4>Real-time Availability</h4>
+          <p>See exactly how many spots are open at every location before you leave home.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:var(--success-light);color:var(--success);">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <h4>Instant Booking</h4>
+          <p>Reserve your spot in seconds. Your vehicle number is all you need.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:var(--warning-light);color:var(--warning);">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h4>Usage Analytics</h4>
+          <p>Track your parking history, spending trends, and favourite locations in one place.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:var(--info-light);color:var(--info);">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h4>Admin Controls</h4>
+          <p>Full visibility into lots, users, and revenue with a powerful admin dashboard.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:var(--danger-light);color:var(--danger);">
+            <i class="fas fa-bell"></i>
+          </div>
+          <h4>Email Reminders</h4>
+          <p>Daily reminders and monthly activity reports delivered to your inbox.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#faf5ff;color:#7c3aed;">
+            <i class="fas fa-file-csv"></i>
+          </div>
+          <h4>CSV Export</h4>
+          <p>Download your booking history anytime for personal records or expense tracking.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="landing-footer">
+    &copy; 2026 ParkEase · Smart Vehicle Parking System &nbsp;·&nbsp; A project by <strong style="color:#94a3b8;">Vikash Ram Mahuri</strong>
+  </footer>
 </div>
 {% endblock %}
 
 {% block page_scripts %}
 <script>
-    const { createApp } = Vue;
-    createApp({
-        methods: {
-            goTo(path) {
-                window.location.href = path;
-            }
-        }
-    }).mount('#app');
+  const { createApp } = Vue;
+  createApp({
+    methods: { goTo(path) { window.location.href = path; } }
+  }).mount('#app');
 </script>
 {% endblock %}

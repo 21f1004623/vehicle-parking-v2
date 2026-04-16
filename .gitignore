@@ -30,4 +30,7 @@ static/exports/
 Thumbs.db
 
 # Project report
-*_Project_Report.pdf 
+*_Project_Report.pdf
+
+# Claude Code memory
+.claude/

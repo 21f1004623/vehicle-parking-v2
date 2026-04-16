@@ -1,160 +1,152 @@
 window.UserDashboard = {
-    template: `
-        <div class="min-vh-100 bg-light">
-            <!-- Header -->
-            <nav class="navbar navbar-expand-lg" style="background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);">
-                <div class="container-fluid px-4">
-                    <a class="navbar-brand text-white fw-bold" href="#">
-                        <i class="fas fa-car me-2"></i> Vehicle Parking App
-                    </a>
-                    <div class="navbar-nav mx-auto">
-                    </div>
-                    <div class="navbar-nav ms-auto">
-                        <button class="btn btn-outline-light" @click="logout">
-                            <i class="fas fa-sign-out-alt me-1"></i> Logout
-                        </button>
-                    </div>
-                </div>
-            </nav>
+  template: `
+    <div class="app-shell">
 
-            <!-- Navigation -->
-            <div class="container-fluid px-4 py-3" style="background: rgba(255,255,255,0.9); border-bottom: 1px solid rgba(0,0,0,0.1);">
-                <div class="d-flex justify-content-center">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-primary">
-                            <i class="fas fa-home me-2"></i>Dashboard
-                        </button>
-                        <router-link to="/bookings" class="btn btn-outline-primary">
-                            <i class="fas fa-calendar-check me-2"></i>My Bookings
-                        </router-link>
-                        <router-link to="/analytics" class="btn btn-outline-primary">
-                            <i class="fas fa-chart-line me-2"></i>Analytics
-                        </router-link>
-                        <router-link to="/profile" class="btn btn-outline-primary">
-                            <i class="fas fa-user me-2"></i>Profile
-                        </router-link>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="container mt-4">
-                <!-- Available Parking Locations Section -->
-                <div class="mb-5">
-                    <div class="text-center mb-4">
-                        <h2 class="fw-bold text-dark mb-2">
-                            <i class="fas fa-parking text-primary me-2"></i>Available Parking Locations
-                        </h2>
-                        <p class="text-muted">Choose from {{ parkingLots.length }} available parking locations</p>
-                    </div>
-
-                    <!-- No parking lots message -->
-                    <div v-if="parkingLots.length === 0" class="text-center py-3">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body py-3">
-                                <i class="fas fa-parking fa-2x text-muted mb-3"></i>
-                                <h6 class="text-muted">No Parking Lots Available</h6>
-                                <p class="text-muted">Check back later for available parking locations.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Parking lots grid -->
-                    <div v-else class="row g-3 mb-4">
-                        <div v-for="lot in parkingLots" :key="lot.id" class="col-lg-4 col-md-6 mb-3">
-                                                    <div class="card h-100 shadow-sm">
-                            <div class="card-body p-3">
-                                <h6 class="card-title mb-2">{{ lot.name }}</h6>
-
-                                    <p class="mb-2">{{ lot.address }}</p>
-                                    <p class="mb-2"><strong>Rate:</strong> ₹{{ Math.round(lot.hourly_rate) }}/hour</p>
-
-                                    <!-- Availability -->
-                                    <p class="mb-3">
-                                        <strong>Available:</strong> {{ lot.spots_available }} / {{ lot.total_spots }} spots
-                                    </p>
-
-                                    <button class="btn btn-primary w-100"
-                                            @click="bookParking(lot.id)"
-                                            :disabled="lot.spots_available === 0">
-                                        {{ lot.spots_available === 0 ? 'Full' : 'Book Parking' }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <a href="/"><div class="brand-icon"><i class="fas fa-car"></i></div>ParkEase</a>
         </div>
-    `,
-    data() {
-        return {
-            parkingLots: [],
-            userName: ''
-        };
-    },
-    methods: {
-        async fetchParkingLots() {
-            try {
-                // Add cache-busting parameter to ensure fresh data
-                const timestamp = new Date().getTime();
-                const response = await fetch(`/api/parking-lots?_t=${timestamp}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        this.parkingLots = data.locations || [];
-                    } else {
-                        console.error('Failed to fetch parking lots:', data.message);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching parking lots:', error);
-            }
-        },
-        async fetchUserName() {
-            try {
-                const response = await fetch('/api/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.profile) {
-                        this.userName = data.profile.name || data.profile.username;
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching user name:', error);
-            }
-        },
+        <div style="padding:.75rem .75rem .25rem;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#334155;">
+          Hi, {{ userName || 'User' }}
+        </div>
+        <div class="sidebar-nav">
+          <span class="sidebar-section">Menu</span>
+          <a href="#" class="active"><span class="nav-icon"><i class="fas fa-home"></i></span>Dashboard</a>
+          <router-link to="/bookings"><span class="nav-icon"><i class="fas fa-calendar-check"></i></span>My Bookings</router-link>
+          <router-link to="/analytics"><span class="nav-icon"><i class="fas fa-chart-line"></i></span>Analytics</router-link>
+          <router-link to="/profile"><span class="nav-icon"><i class="fas fa-user"></i></span>Profile</router-link>
+        </div>
+        <div class="sidebar-footer">
+          <button @click="logout"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+        </div>
+      </aside>
 
+      <!-- Main -->
+      <div class="main-content">
+        <div class="top-bar">
+          <div>
+            <div class="top-bar-title">Available Parking</div>
+            <div class="top-bar-subtitle">{{ filteredLots.length }} of {{ parkingLots.length }} locations shown</div>
+          </div>
+        </div>
 
-        bookParking(lotId) {
-            this.$router.push(`/book-parking/${lotId}`);
-        },
-        logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('isAdmin');
-            this.$router.push('/login');
-        },
+        <div class="page-content">
 
-    },
-    mounted() {
-        this.fetchParkingLots();
-        this.fetchUserName();
-    },
-    watch: {
-        // Watch for route changes to refresh data when user comes back to dashboard
-        '$route'(to, from) {
-            if (to.path === '/dashboard') {
-                this.fetchParkingLots();
-            }
-        }
+          <!-- Filter bar -->
+          <div class="filter-bar">
+            <div class="input-wrap">
+              <i class="fas fa-search"></i>
+              <input class="form-control" v-model="searchQuery" placeholder="Search by name or address…">
+            </div>
+            <div class="pill-group">
+              <button class="pill" :class="availabilityFilter==='all' ? 'active-all' : ''" @click="availabilityFilter='all'">All</button>
+              <button class="pill" :class="availabilityFilter==='available' ? 'active-avail' : ''" @click="availabilityFilter='available'">Available</button>
+              <button class="pill" :class="availabilityFilter==='full' ? 'active-full' : ''" @click="availabilityFilter='full'">Full</button>
+            </div>
+            <select class="form-select" style="width:auto;min-width:170px;" v-model="sortBy">
+              <option value="default">Sort: Default</option>
+              <option value="price_asc">Price: Low → High</option>
+              <option value="price_desc">Price: High → Low</option>
+              <option value="availability">Most Available</option>
+            </select>
+          </div>
+
+          <!-- Empty / No results -->
+          <div v-if="filteredLots.length === 0 && parkingLots.length > 0" class="empty-state">
+            <i class="fas fa-search"></i>
+            <h6>No matching locations</h6>
+            <p>Try adjusting your search or filters.</p>
+            <button class="btn btn-ghost btn-sm" @click="clearFilters">Clear Filters</button>
+          </div>
+
+          <div v-else-if="parkingLots.length === 0" class="empty-state">
+            <i class="fas fa-parking"></i>
+            <h6>No parking lots available</h6>
+            <p>Check back later.</p>
+          </div>
+
+          <!-- Lots grid -->
+          <div v-else class="grid-3">
+            <div v-for="lot in filteredLots" :key="lot.id" class="lot-card" :class="lot.spots_available === 0 ? 'full' : ''">
+              <div class="lot-card-header">
+                <div class="flex items-center justify-between">
+                  <h6 class="lot-name">{{ lot.name }}</h6>
+                  <span class="lot-badge" :class="lot.spots_available === 0 ? 'full' : 'available'">
+                    {{ lot.spots_available === 0 ? 'Full' : lot.spots_available + ' free' }}
+                  </span>
+                </div>
+              </div>
+              <div class="lot-card-body">
+                <div class="lot-meta">
+                  <div class="lot-meta-item"><i class="fas fa-map-marker-alt"></i> {{ lot.address }}</div>
+                  <div class="lot-meta-item"><i class="fas fa-map-pin"></i> PIN {{ lot.postal_code }}</div>
+                </div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="lot-price">₹{{ Math.round(lot.hourly_rate) }}/hr</span>
+                  <span class="text-sm text-muted">{{ lot.spots_available }}/{{ lot.total_spots }}</span>
+                </div>
+                <div class="mb-3">
+                  <div class="avail-bar">
+                    <div class="avail-bar-fill"
+                      :class="lot.spots_available/lot.total_spots > .5 ? 'high' : lot.spots_available/lot.total_spots > .2 ? 'medium' : 'low'"
+                      :style="'width:' + (lot.spots_available/lot.total_spots*100) + '%'"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="lot-card-footer">
+                <button class="btn btn-block"
+                  :class="lot.spots_available === 0 ? 'btn-ghost' : 'btn-primary'"
+                  :disabled="lot.spots_available === 0"
+                  @click="bookParking(lot.id)">
+                  <i class="fas" :class="lot.spots_available === 0 ? 'fa-ban' : 'fa-parking'"></i>
+                  {{ lot.spots_available === 0 ? 'No Spots Available' : 'Book This Spot' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  `,
+
+  data() { return { parkingLots: [], userName: '', searchQuery: '', availabilityFilter: 'all', sortBy: 'default' }; },
+
+  computed: {
+    filteredLots() {
+      let lots = [...this.parkingLots];
+      if (this.searchQuery.trim()) {
+        const q = this.searchQuery.toLowerCase();
+        lots = lots.filter(l => l.name.toLowerCase().includes(q) || l.address.toLowerCase().includes(q) || (l.postal_code && l.postal_code.includes(q)));
+      }
+      if (this.availabilityFilter === 'available') lots = lots.filter(l => l.spots_available > 0);
+      else if (this.availabilityFilter === 'full') lots = lots.filter(l => l.spots_available === 0);
+      if (this.sortBy === 'price_asc') lots.sort((a,b) => a.hourly_rate - b.hourly_rate);
+      else if (this.sortBy === 'price_desc') lots.sort((a,b) => b.hourly_rate - a.hourly_rate);
+      else if (this.sortBy === 'availability') lots.sort((a,b) => b.spots_available - a.spots_available);
+      return lots;
     }
+  },
+
+  methods: {
+    clearFilters() { this.searchQuery = ''; this.availabilityFilter = 'all'; this.sortBy = 'default'; },
+    async fetchParkingLots() {
+      try {
+        const res = await fetch(`/api/parking-lots?_t=${Date.now()}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        if (res.ok) { const d = await res.json(); if (d.success) this.parkingLots = d.locations || []; }
+      } catch {}
+    },
+    async fetchUserName() {
+      try {
+        const res = await fetch('/api/profile', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        if (res.ok) { const d = await res.json(); if (d.success && d.profile) this.userName = d.profile.name || d.profile.username; }
+      } catch {}
+    },
+    bookParking(lotId) { this.$router.push(`/book-parking/${lotId}`); },
+    logout() { localStorage.removeItem('token'); localStorage.removeItem('isAdmin'); this.$router.push('/login'); }
+  },
+
+  mounted() { this.fetchParkingLots(); this.fetchUserName(); },
+  watch: { '$route'(to) { if (to.path === '/dashboard') this.fetchParkingLots(); } }
 };
-  

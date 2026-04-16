@@ -334,6 +334,35 @@ class UserProfileAPI(Resource):
             return api_response(False, "Sorry, we couldn't update your profile right now. Please try again.", status=500)
 
 
+class UserChangePasswordAPI(Resource):
+    """Handle user password change"""
+
+    @jwt_required()
+    def put(self):
+        current_user_id = int(get_jwt_identity())
+        user_account = User.query.get(current_user_id)
+        if not user_account:
+            return api_response(False, "User account not found", status=404)
+        data = request.get_json()
+        if not data:
+            return api_response(False, "No data provided", status=400)
+        current_password = data.get('current_password', '')
+        new_password = data.get('new_password', '')
+        if not current_password or not new_password:
+            return api_response(False, "Current and new password are required", status=400)
+        if user_account.password != current_password:
+            return api_response(False, "Current password is incorrect", status=400)
+        if len(new_password) < 6:
+            return api_response(False, "New password must be at least 6 characters", status=400)
+        user_account.password = new_password
+        try:
+            db.session.commit()
+            return api_response(True, "Password changed successfully!")
+        except Exception:
+            db.session.rollback()
+            return api_response(False, "Failed to change password. Please try again.", status=500)
+
+
 class UserCSVExportAPI(Resource):
     @jwt_required()
     def get(self):

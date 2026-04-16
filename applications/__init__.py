@@ -41,12 +41,14 @@ def create_app():
     return app
 
 def init_database(app):
-    """Initialize database tables and create admin user"""
+    """Initialize database tables and seed demo data"""
     with app.app_context():
         from applications.models import User, ParkingLot, ParkingSpot, Reservation
+        from datetime import datetime, timedelta
+        import random
         db.create_all()
-        
-        # Create admin user if doesn't exist
+
+        # ── Admin user ────────────────────────────────────────────────────────
         admin_user = User.query.filter_by(username='admin').first()
         if not admin_user:
             admin_user = User(
@@ -58,67 +60,85 @@ def init_database(app):
             )
             db.session.add(admin_user)
             db.session.commit()
-        
-        # Create sample parking lots if they don't exist
+
+        # ── Regular users ─────────────────────────────────────────────────────
+        seed_users = [
+            ('user1', 'User One',   'user1@example.com', 'user1'),
+            ('user2', 'User Two',   'user2@example.com', 'user2'),
+            ('user3', 'User Three', 'user3@example.com', 'user3'),
+            ('user4', 'User Four',  'user4@example.com', 'user4'),
+            ('user5', 'User Five',  'user5@example.com', 'user5'),
+        ]
+        users = {}
+        for username, name, email, password in seed_users:
+            u = User.query.filter_by(username=username).first()
+            if not u:
+                u = User(name=name, username=username, email=email, password=password,
+                         last_visit=datetime.utcnow() - timedelta(days=random.randint(0, 10)))
+                db.session.add(u)
+            users[username] = u
+        db.session.commit()
+
+        # ── Parking lots & spots ──────────────────────────────────────────────
         if ParkingLot.query.count() == 0:
             parking_lots_data = [
-                {
-                    'name': 'Park Street Metro Parking',
-                    'price': 25.0,
-                    'address': '15 Park Street, Near Metro Station',
-                    'pin_code': '700016',
-                    'spots': 20
-                },
-                {
-                    'name': 'Netaji Subhash Airport Parking',
-                    'price': 35.0,
-                    'address': 'Jessore Road, Dum Dum Airport',
-                    'pin_code': '700052',
-                    'spots': 50
-                },
-                {
-                    'name': 'New Market Shopping Complex',
-                    'price': 20.0,
-                    'address': '19 Lindsay Street, New Market Area',
-                    'pin_code': '700087',
-                    'spots': 30
-                },
-                {
-                    'name': 'Salt Lake Sector V IT Hub',
-                    'price': 40.0,
-                    'address': 'Sector V, Salt Lake City',
-                    'pin_code': '700091',
-                    'spots': 25
-                },
-                {
-                    'name': 'Jadavpur University Campus',
-                    'price': 15.0,
-                    'address': '188 Raja S.C. Mallick Road, Jadavpur',
-                    'pin_code': '700032',
-                    'spots': 100
-                }
+                ('Park Street Metro Parking',     25.0, '15 Park Street, Near Metro Station',  '700016', 20),
+                ('Netaji Subhash Airport Parking', 35.0, 'Jessore Road, Dum Dum Airport',       '700052', 50),
+                ('New Market Shopping Complex',    20.0, '19 Lindsay Street, New Market Area',  '700087', 30),
+                ('Salt Lake Sector V IT Hub',      40.0, 'Sector V, Salt Lake City',            '700091', 25),
+                ('Jadavpur University Campus',     15.0, '188 Raja S.C. Mallick Road, Jadavpur','700032', 40),
             ]
-            
-            for lot_data in parking_lots_data:
-                # Create parking lot
-                parking_lot = ParkingLot(
-                    prime_location_name=lot_data['name'],
-                    price=lot_data['price'],
-                    address=lot_data['address'],
-                    pin_code=lot_data['pin_code'],
-                    number_of_spots=lot_data['spots'],
-                    admin_id=admin_user.id
+            for name, price, address, pin, spots in parking_lots_data:
+                lot = ParkingLot(
+                    prime_location_name=name, price=price,
+                    address=address, pin_code=pin,
+                    number_of_spots=spots, admin_id=admin_user.id
                 )
-                db.session.add(parking_lot)
-                db.session.flush()  # Get the ID for the parking lot
-                
-                # Create parking spots for this lot
-                for spot_num in range(1, lot_data['spots'] + 1):
-                    parking_spot = ParkingSpot(
-                        lot_id=parking_lot.id,
-                        status='A',  # Available
-                        spot_number=spot_num
-                    )
-                    db.session.add(parking_spot)
-            
-            db.session.commit() 
+                db.session.add(lot)
+                db.session.flush()
+                for spot_num in range(1, spots + 1):
+                    db.session.add(ParkingSpot(lot_id=lot.id, status='A', spot_number=spot_num))
+            db.session.commit()
+
+        # ── Reservations (past + active) ──────────────────────────────────────
+        if Reservation.query.count() == 0:
+            all_spots = ParkingSpot.query.all()
+            all_lots  = {s.lot_id: s.lot for s in all_spots}
+            regular_users = list(users.values())
+            vehicles = ['KA01AB1234','MH02CD5678','DL03EF9012',
+                        'TN04GH3456','WB05IJ7890','UP06KL2345']
+            now = datetime.utcnow()
+
+            # Past completed reservations spread over last 60 days
+            for i in range(80):
+                spot = random.choice(all_spots)
+                user = random.choice(regular_users)
+                price_per_hour = all_lots[spot.lot_id].price
+                start = now - timedelta(days=random.randint(1, 60),
+                                        hours=random.randint(0, 20))
+                duration_hrs = random.uniform(0.5, 8)
+                end = start + timedelta(hours=duration_hrs)
+                cost = round(price_per_hour * duration_hrs, 2)
+                db.session.add(Reservation(
+                    spot_id=spot.id, user_id=user.id,
+                    parking_timestamp=start, leaving_timestamp=end,
+                    parking_cost=cost,
+                    vehicle_number=random.choice(vehicles)
+                ))
+
+            # Active reservations (no leaving_timestamp)
+            used_spots = set()
+            for user in regular_users:
+                spot = random.choice([s for s in all_spots if s.id not in used_spots])
+                used_spots.add(spot.id)
+                spot.status = 'O'
+                spot.user_id = user.id
+                db.session.add(Reservation(
+                    spot_id=spot.id, user_id=user.id,
+                    parking_timestamp=now - timedelta(hours=random.uniform(0.5, 3)),
+                    leaving_timestamp=None,
+                    parking_cost=None,
+                    vehicle_number=random.choice(vehicles)
+                ))
+
+            db.session.commit()

@@ -1,10 +1,13 @@
+import os
 from flask_caching import Cache
 
-# Redis caching configuration
+_redis_base = os.environ.get('REDIS_URL', 'redis://localhost:6379')
+
+# Redis caching configuration — DB 3 reserved for cache to avoid conflicts
 config = {
     "CACHE_TYPE": "RedisCache",
-    "CACHE_REDIS_URL": "redis://localhost:6379/3",  # Use DB 3 to avoid conflicts
-    "CACHE_DEFAULT_TIMEOUT": 60  # 1 minute default timeout (reduced for more responsive updates)
+    "CACHE_REDIS_URL": f"{_redis_base}/3",
+    "CACHE_DEFAULT_TIMEOUT": 60
 }
 
 cache = Cache(config=config)

@@ -124,6 +124,39 @@ class AdminParkingLotsAPI(Resource):
         return api_response(True, "Parking lot deleted successfully")
 
 
+class AdminSummaryStatsAPI(Resource):
+    """Return high-level stats for the admin dashboard header cards"""
+
+    @jwt_required()
+    def get(self):
+        current_user_id = int(get_jwt_identity())
+        current_user = User.query.get(current_user_id)
+        if not current_user or not current_user.is_admin:
+            return api_response(False, "Access denied", status=403)
+
+        total_lots = ParkingLot.query.filter_by(admin_id=current_user_id).count()
+        total_users = User.query.filter_by(is_admin=False).count()
+
+        all_reservations = (
+            db.session.query(Reservation)
+            .join(ParkingSpot, Reservation.spot_id == ParkingSpot.id)
+            .join(ParkingLot, ParkingSpot.lot_id == ParkingLot.id)
+            .filter(ParkingLot.admin_id == current_user_id)
+            .all()
+        )
+
+        active_count = sum(1 for r in all_reservations if not r.leaving_timestamp)
+        total_revenue = sum(r.parking_cost or 0 for r in all_reservations if r.leaving_timestamp)
+
+        return api_response(True, data={
+            "total_lots": total_lots,
+            "total_users": total_users,
+            "active_reservations": active_count,
+            "total_revenue": round(total_revenue),
+            "total_reservations": len(all_reservations)
+        })
+
+
 class AdminUsersAPI(Resource):
     @jwt_required()
     def get(self):

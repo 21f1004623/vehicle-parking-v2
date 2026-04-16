@@ -1,0 +1,73 @@
+services:
+
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"   # SMTP (used by Celery tasks)
+      - "8025:8025"   # Web UI — open http://localhost:8025 to see sent emails
+    restart: unless-stopped
+
+  # ── Application ─────────────────────────────────────────────────────────────
+
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: sqlite:////app/data/parking.db
+      MAIL_SERVER: mailhog
+      MAIL_PORT: "1025"
+    volumes:
+      - sqlite_data:/app/data
+    depends_on:
+      - redis
+      - mailhog
+    restart: unless-stopped
+
+  celery_worker:
+    build: .
+    command: celery -A main worker --loglevel=info --concurrency=2
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: sqlite:////app/data/parking.db
+      MAIL_SERVER: mailhog
+      MAIL_PORT: "1025"
+    volumes:
+      - sqlite_data:/app/data
+    depends_on:
+      - redis
+      - web
+    restart: unless-stopped
+
+  celery_beat:
+    build: .
+    command: celery -A main beat --loglevel=info
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: sqlite:////app/data/parking.db
+    volumes:
+      - sqlite_data:/app/data
+    depends_on:
+      - redis
+      - web
+    restart: unless-stopped
+
+# ── Volumes ──────────────────────────────────────────────────────────────────
+
+volumes:
+  sqlite_data:   # Persists the SQLite database across container restarts

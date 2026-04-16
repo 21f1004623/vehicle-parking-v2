@@ -1,8 +1,8 @@
 
 from flask import render_template
 from applications import create_app, init_database
-from applications.api.admin_api import AdminAPI, AdminUsersAPI, AdminParkingLotsAPI, AdminReservationsAPI, CancelBookingAPI, CSVExportAPI
-from applications.api.user_api import UserLoginAPI, UserRegistrationAPI, ParkingLocationAPI, ParkingReservationAPI, UserBookingHistoryAPI, UserProfileAPI, UserCSVExportAPI
+from applications.api.admin_api import AdminAPI, AdminUsersAPI, AdminParkingLotsAPI, AdminReservationsAPI, CancelBookingAPI, CSVExportAPI, AdminSummaryStatsAPI
+from applications.api.user_api import UserLoginAPI, UserRegistrationAPI, ParkingLocationAPI, ParkingReservationAPI, UserBookingHistoryAPI, UserProfileAPI, UserCSVExportAPI, UserChangePasswordAPI
 from applications.utils import celery_init_app
 from applications.worker import daily_reminder, monthly_report, user_monthly_activity_report
 from flask_restful import Api
@@ -41,6 +41,7 @@ api.add_resource(AdminParkingLotsAPI, '/api/admin/parking-lots', '/api/admin/par
 api.add_resource(AdminReservationsAPI, '/api/admin/reservations')
 api.add_resource(CancelBookingAPI, '/api/admin/cancel-booking/<int:reservation_id>')
 api.add_resource(CSVExportAPI, '/api/admin/export-csv')
+api.add_resource(AdminSummaryStatsAPI, '/api/admin/stats')
 # User APIs
 api.add_resource(UserLoginAPI, '/api/user/auth')
 api.add_resource(UserRegistrationAPI, '/api/user/register')
@@ -49,6 +50,7 @@ api.add_resource(ParkingReservationAPI, '/api/reservations', '/api/reservations/
 api.add_resource(UserBookingHistoryAPI, '/api/bookings')
 api.add_resource(UserProfileAPI, '/api/profile')
 api.add_resource(UserCSVExportAPI, '/api/user/export-csv')
+api.add_resource(UserChangePasswordAPI, '/api/user/change-password')
 
 
 # --- Basic Routes ---
@@ -67,4 +69,4 @@ def admin():
 
 # --- App Runner ---
 if __name__ == '__main__':
-    tsapp.run(debug=False, port=5000)
+    tsapp.run(debug=False, host='0.0.0.0', port=5000)

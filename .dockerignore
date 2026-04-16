@@ -1,0 +1,17 @@
+.git
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite
+*.sqlite3
+instance/
+data/
+static/exports/
+celerybeat-schedule
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

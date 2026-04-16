@@ -17,7 +17,10 @@ def daily_reminder():
     
     # Ensure we're in Flask app context
     with current_app.app_context():
-        smtpObj = smtplib.SMTP('localhost', 1025)  # MailHog SMTP server
+        smtpObj = smtplib.SMTP(
+            os.environ.get('MAIL_SERVER', 'localhost'),
+            int(os.environ.get('MAIL_PORT', 1025))
+        )
         
         from flask import render_template
         
@@ -51,7 +54,10 @@ def monthly_report():
     
     # Ensure we're in Flask app context
     with current_app.app_context():
-        smtpObj = smtplib.SMTP('localhost', 1025)  # MailHog SMTP server
+        smtpObj = smtplib.SMTP(
+            os.environ.get('MAIL_SERVER', 'localhost'),
+            int(os.environ.get('MAIL_PORT', 1025))
+        )
         
         from flask import render_template
         
@@ -108,7 +114,10 @@ def user_monthly_activity_report():
     
     # Ensure we're in Flask app context
     with current_app.app_context():
-        smtpObj = smtplib.SMTP('localhost', 1025)  # MailHog SMTP server
+        smtpObj = smtplib.SMTP(
+            os.environ.get('MAIL_SERVER', 'localhost'),
+            int(os.environ.get('MAIL_PORT', 1025))
+        )
         
         from flask import render_template
         
