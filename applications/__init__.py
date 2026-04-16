@@ -44,6 +44,7 @@ def init_database(app):
     """Initialize database tables and seed demo data"""
     with app.app_context():
         from applications.models import User, ParkingLot, ParkingSpot, Reservation
+        from werkzeug.security import generate_password_hash
         from datetime import datetime, timedelta
         import random
         db.create_all()
@@ -55,7 +56,7 @@ def init_database(app):
                 name='Administrator',
                 username='admin',
                 email='admin@parkingsystem.com',
-                password='admin',
+                password=generate_password_hash('admin'),
                 is_admin=True
             )
             db.session.add(admin_user)
@@ -73,7 +74,7 @@ def init_database(app):
         for username, name, email, password in seed_users:
             u = User.query.filter_by(username=username).first()
             if not u:
-                u = User(name=name, username=username, email=email, password=password,
+                u = User(name=name, username=username, email=email, password=generate_password_hash(password),
                          last_visit=datetime.utcnow() - timedelta(days=random.randint(0, 10)))
                 db.session.add(u)
             users[username] = u

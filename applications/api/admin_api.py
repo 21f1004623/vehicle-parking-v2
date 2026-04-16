@@ -5,6 +5,7 @@ from applications import db
 from applications.worker import export_csv
 from applications.utils import api_response
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from celery.result import AsyncResult
 
@@ -19,7 +20,7 @@ class AdminAPI(Resource):
         if not username or not password:
             return api_response(False, "Username and password required", status=400)
         user = User.query.filter_by(username=username).first()
-        if user and user.password == password and user.is_admin:
+        if user and check_password_hash(user.password, password) and user.is_admin:
             access_token = create_access_token(identity=str(user.id))
             return api_response(True, data={
                 "token": access_token,

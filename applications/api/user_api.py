@@ -7,6 +7,7 @@ from applications import db
 from applications.cache import cache
 from applications.utils import api_response
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 # Constants for better code readability
@@ -26,7 +27,7 @@ class UserLoginAPI(Resource):
         if not username or not password:
             return api_response(False, "Please enter both username and password", status=400)
         user_account = User.query.filter_by(username=username).first()
-        if user_account and user_account.password == password and not user_account.is_admin:
+        if user_account and check_password_hash(user_account.password, password) and not user_account.is_admin:
             access_token = create_access_token(identity=str(user_account.id))
             return api_response(True, f"Welcome back, {user_account.name or username}!", data={
                 "token": access_token,
@@ -61,7 +62,7 @@ class UserRegistrationAPI(Resource):
                 return api_response(False, f"Email '{email_address}' is already registered. Please use a different email.", status=400)
         new_user_account = User(
             username=username,
-            password=password,  # Note: In production, this should be hashed
+            password=generate_password_hash(password),
             name=full_name if full_name else username,
             email=email_address if email_address else None,
             is_admin=False
@@ -350,11 +351,11 @@ class UserChangePasswordAPI(Resource):
         new_password = data.get('new_password', '')
         if not current_password or not new_password:
             return api_response(False, "Current and new password are required", status=400)
-        if user_account.password != current_password:
+        if not check_password_hash(user_account.password, current_password):
             return api_response(False, "Current password is incorrect", status=400)
         if len(new_password) < 6:
             return api_response(False, "New password must be at least 6 characters", status=400)
-        user_account.password = new_password
+        user_account.password = generate_password_hash(new_password)
         try:
             db.session.commit()
             return api_response(True, "Password changed successfully!")
