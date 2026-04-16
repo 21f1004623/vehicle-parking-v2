@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}ParkEase — Documentation{% endblock %}
+
+{% block content %}
+<div id="docs">
+
+  <!-- Nav -->
+  <nav class="landing-nav">
+    <a href="/" class="nav-brand">
+      <div class="nav-brand-icon"><i class="fas fa-car"></i></div>
+      ParkEase
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/user">User Portal</a>
+      <a href="/admin">Admin Portal</a>
+      <a href="/docs" style="color:#fff;">Docs</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div style="background:linear-gradient(135deg,#0f172a,#1e1b4b,#312e81);padding:7rem 2rem 4rem;text-align:center;">
+    <span style="display:inline-block;background:rgba(99,102,241,.2);color:#a5b4fc;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.35rem 1rem;border-radius:20px;border:1px solid rgba(99,102,241,.3);margin-bottom:1rem;">
+      Technical Reference
+    </span>
+    <h1 style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;color:#fff;margin:0 0 .75rem;letter-spacing:-.02em;">
+      ParkEase Documentation
+    </h1>
+    <p style="color:#94a3b8;font-size:1rem;max-width:520px;margin:0 auto;line-height:1.7;">
+      Stack overview, API reference, default credentials, and live deployment limitations.
+    </p>
+  </div>
+
+  <!-- Sticky sidebar + content -->
+  <div style="max-width:1100px;margin:0 auto;padding:3rem 2rem;display:flex;gap:2.5rem;align-items:flex-start;">
+
+    <!-- Sidebar TOC -->
+    <div style="width:200px;flex-shrink:0;position:sticky;top:1.5rem;">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.75rem;">On this page</div>
+      <nav style="display:flex;flex-direction:column;gap:.25rem;">
+        <a href="#stack"       class="toc-link">Tech Stack</a>
+        <a href="#features"    class="toc-link">Features</a>
+        <a href="#api"         class="toc-link">API Reference</a>
+        <a href="#credentials" class="toc-link">Credentials</a>
+        <a href="#seed"        class="toc-link">Seed Data</a>
+        <a href="#limits"      class="toc-link">Deployment Limits</a>
+      </nav>
+    </div>
+
+    <!-- Main content -->
+    <div style="flex:1;min-width:0;">
+
+      <!-- Tech Stack -->
+      <section id="stack" class="doc-section">
+        <h2 class="doc-h2"><i class="fas fa-layer-group"></i> Tech Stack</h2>
+        <table class="data-table" style="margin-top:.75rem;">
+          <thead><tr><th>Layer</th><th>Technology</th></tr></thead>
+          <tbody>
+            <tr><td class="fw-600">Backend</td><td>Flask 2.3, Flask-RESTful, SQLAlchemy 2.0</td></tr>
+            <tr><td class="fw-600">Auth</td><td>Flask-JWT-Extended · Werkzeug password hashing</td></tr>
+            <tr><td class="fw-600">Frontend</td><td>Vue.js 3 (CDN) · Vue Router 4 · Chart.js · Font Awesome</td></tr>
+            <tr><td class="fw-600">Styling</td><td>Custom CSS design system — Inter font, no Bootstrap</td></tr>
+            <tr><td class="fw-600">Database</td><td>SQLite (auto-created on first run)</td></tr>
+            <tr><td class="fw-600">Cache</td><td>Redis via Flask-Caching (30s TTL on parking lots)</td></tr>
+            <tr><td class="fw-600">Task Queue</td><td>Celery 5.3 + Redis broker</td></tr>
+            <tr><td class="fw-600">Email</td><td>SMTP — MailHog for development</td></tr>
+            <tr><td class="fw-600">Containers</td><td>Docker + Docker Compose (5 services)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Features -->
+      <section id="features" class="doc-section">
+        <h2 class="doc-h2"><i class="fas fa-star"></i> Features</h2>
+
+        <h3 class="doc-h3">User</h3>
+        <ul class="doc-list">
+          <li>Register and login with JWT authentication (passwords hashed with Werkzeug)</li>
+          <li>Browse parking lots — live search, availability filter, price sort</li>
+          <li>Book a spot — auto-assigns next available spot in chosen lot</li>
+          <li>Live duration timer and estimated cost on active bookings</li>
+          <li>Reservation receipt modal with full bill summary after checkout</li>
+          <li>Booking history — active and completed sessions in one view</li>
+          <li>Personal analytics — monthly spending chart, weekly usage pattern, quick stats</li>
+          <li>Export full booking history to CSV</li>
+          <li>Profile page — update name, email, username, change password</li>
+          <li>Monthly activity report delivered by email (Celery scheduled task)</li>
+        </ul>
+
+        <h3 class="doc-h3">Admin</h3>
+        <ul class="doc-list">
+          <li>Separate admin login with role-based JWT validation</li>
+          <li>Dashboard stat cards — total lots, users, active sessions, total revenue</li>
+          <li>Create, edit, delete parking lots with spot count management</li>
+          <li>Monitor all reservations — filter by active / completed, cancel active bookings</li>
+          <li>User management — view all users, total spend, current parking status</li>
+          <li>Export all data to CSV (async via Celery)</li>
+          <li>Analytics page — revenue trend, booking status, lot utilisation, daily bookings</li>
+          <li>Monthly revenue report delivered by email (Celery scheduled task)</li>
+        </ul>
+
+        <h3 class="doc-h3">System</h3>
+        <ul class="doc-list">
+          <li>Toast notification system — non-blocking success / error / warning messages</li>
+          <li>Redis-cached parking lot API responses (30s TTL, invalidated on booking)</li>
+          <li>Celery Beat scheduled tasks — daily reminders (6 PM), monthly admin report (1st, midnight), monthly user report (1st, 9 AM)</li>
+          <li>Seed data on first run — 5 demo users, 5 parking lots, 80+ past reservations, 5 active sessions</li>
+        </ul>
+      </section>
+
+      <!-- API Reference -->
+      <section id="api" class="doc-section">
+        <h2 class="doc-h2"><i class="fas fa-plug"></i> API Reference</h2>
+        <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:1rem;">All endpoints return <code>{ success, message, ...data }</code>. Protected routes require <code>Authorization: Bearer &lt;token&gt;</code>.</p>
+
+        <h3 class="doc-h3">Auth</h3>
+        <table class="data-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-green">POST</span></td><td><code>/api/user/auth</code></td><td>User login</td><td>—</td></tr>
+            <tr><td><span class="badge badge-green">POST</span></td><td><code>/api/user/register</code></td><td>User registration</td><td>—</td></tr>
+            <tr><td><span class="badge badge-green">POST</span></td><td><code>/api/admin/auth</code></td><td>Admin login</td><td>—</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="doc-h3">User</h3>
+        <table class="data-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-blue">GET</span></td><td><code>/api/parking-lots</code></td><td>List all parking lots with availability</td></tr>
+            <tr><td><span class="badge badge-green">POST</span></td><td><code>/api/reservations</code></td><td>Book a parking spot</td></tr>
+            <tr><td><span class="badge badge-red">DELETE</span></td><td><code>/api/reservations/&lt;id&gt;</code></td><td>End a parking session, returns bill summary</td></tr>
+            <tr><td><span class="badge badge-blue">GET</span></td><td><code>/api/bookings</code></td><td>Full booking history (active + completed)</td></tr>
+            <tr><td><span class="badge badge-blue">GET</span></td><td><code>/api/profile</code></td><td>Get profile and parking stats</td></tr>
+            <tr><td><span class="badge badge-amber">PUT</span></td><td><code>/api/profile</code></td><td>Update name, username, email</td></tr>
+            <tr><td><span class="badge badge-amber">PUT</span></td><td><code>/api/user/change-password</code></td><td>Change password</td></tr>
+            <tr><td><span class="badge badge-blue">GET</span></td><td><code>/api/user/export-csv</code></td><td>Download booking history as CSV</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="doc-h3">Admin</h3>
+        <table class="data-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-blue">GET</span></td><td><code>/api/admin/stats</code></td><td>Summary stats — lots, users, revenue, active</td></tr>
+            <tr><td><span class="badge badge-blue">GET</span></td><td><code>/api/admin/parking-lots</code></td><td>List all parking lots</td></tr>
+            <tr><td><span class="badge badge-green">POST</span></td><td><code>/api/admin/parking-lots</code></td><td>Create a new parking lot</td></tr>
+            <tr><td><span class="badge badge-amber">PUT</span></td><td><code>/api/admin/parking-lots/&lt;id&gt;</code></td><td>Update parking lot</td></tr>
+            <tr><td><span class="badge badge-red">DELETE</span></td><td><code>/api/admin/parking-lots/&lt;id&gt;</code></td><td>Delete parking lot</td></tr>
+            <tr><td><span class="badge badge-blue">GET</span></td><td><code>/api/admin/users</code></td><td>List all users with spend and status</td></tr>
+            <tr><td><span class="badge badge-blue">GET</span></td><td><code>/api/admin/reservations</code></td><td>List all reservations</td></tr>
+            <tr><td><span class="badge badge-amber">PUT</span></td><td><code>/api/admin/cancel-booking/&lt;id&gt;</code></td><td>Cancel an active booking</td></tr>
+            <tr><td><span class="badge badge-blue">GET</span></td><td><code>/api/admin/export-csv</code></td><td>Export all data as CSV</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Credentials -->
+      <section id="credentials" class="doc-section">
+        <h2 class="doc-h2"><i class="fas fa-key"></i> Default Credentials</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem;">
+          <div class="card">
+            <div class="card-header"><span class="card-title"><i class="fas fa-user-shield" style="color:var(--danger);margin-right:.4rem;"></i>Admin</span></div>
+            <div class="card-body">
+              <div class="receipt-row"><span class="label">Username</span><span class="value"><code>admin</code></span></div>
+              <div class="receipt-row"><span class="label">Password</span><span class="value"><code>admin</code></span></div>
+              <div class="receipt-row"><span class="label">Portal</span><span class="value"><a href="/admin">/admin</a></span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title"><i class="fas fa-users" style="color:var(--primary);margin-right:.4rem;"></i>Demo Users</span></div>
+            <div class="card-body">
+              <div class="receipt-row"><span class="label">Usernames</span><span class="value"><code>user1</code> – <code>user5</code></span></div>
+              <div class="receipt-row"><span class="label">Password</span><span class="value">same as username</span></div>
+              <div class="receipt-row"><span class="label">Portal</span><span class="value"><a href="/user">/user</a></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Seed Data -->
+      <section id="seed" class="doc-section">
+        <h2 class="doc-h2"><i class="fas fa-database"></i> Seed Data</h2>
+        <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:.75rem;">Automatically populated on first run so all dashboards have data immediately.</p>
+        <table class="data-table">
+          <thead><tr><th>Type</th><th>Count</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr><td class="fw-600">Users</td><td>5</td><td>user1–user5, password = username</td></tr>
+            <tr><td class="fw-600">Parking Lots</td><td>5</td><td>Kolkata locations — prices ₹15–₹40/hr</td></tr>
+            <tr><td class="fw-600">Past Reservations</td><td>80+</td><td>Spread over last 60 days, completed with costs</td></tr>
+            <tr><td class="fw-600">Active Sessions</td><td>5</td><td>One per demo user, currently parked</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Deployment Limits -->
+      <section id="limits" class="doc-section">
+        <h2 class="doc-h2"><i class="fas fa-cloud"></i> Live Deployment Limits</h2>
+        <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:.75rem;">This app is hosted on <strong>Render's free tier</strong>. The following limitations apply:</p>
+        <table class="data-table">
+          <thead><tr><th>Feature</th><th>Status</th><th>Reason</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="fw-600">Login, booking, dashboard</td>
+              <td><span class="badge badge-green"><i class="fas fa-check"></i> Works</span></td>
+              <td>Core Flask app runs normally</td>
+            </tr>
+            <tr>
+              <td class="fw-600">Analytics &amp; charts</td>
+              <td><span class="badge badge-green"><i class="fas fa-check"></i> Works</span></td>
+              <td>Powered by Chart.js on the frontend</td>
+            </tr>
+            <tr>
+              <td class="fw-600">CSV export</td>
+              <td><span class="badge badge-green"><i class="fas fa-check"></i> Works</span></td>
+              <td>Generated inline (no Celery needed)</td>
+            </tr>
+            <tr>
+              <td class="fw-600">Email reminders</td>
+              <td><span class="badge badge-red"><i class="fas fa-times"></i> Disabled</span></td>
+              <td>Celery workers not available on free tier</td>
+            </tr>
+            <tr>
+              <td class="fw-600">Monthly reports</td>
+              <td><span class="badge badge-red"><i class="fas fa-times"></i> Disabled</span></td>
+              <td>Celery Beat scheduler not running</td>
+            </tr>
+            <tr>
+              <td class="fw-600">Data persistence</td>
+              <td><span class="badge badge-amber"><i class="fas fa-exclamation-triangle"></i> Limited</span></td>
+              <td>SQLite resets on redeploy — seed data auto-repopulates</td>
+            </tr>
+            <tr>
+              <td class="fw-600">Cold start</td>
+              <td><span class="badge badge-amber"><i class="fas fa-exclamation-triangle"></i> ~30s</span></td>
+              <td>App sleeps after 15 min inactivity on free tier</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="alert alert-info" style="margin-top:1rem;">
+          <i class="fas fa-info-circle"></i>
+          All limitations are free-tier specific. Full functionality is available when self-hosted via Docker Compose on a VPS.
+        </div>
+      </section>
+
+      <div style="text-align:center;padding:2rem 0;color:var(--text-muted);font-size:.8rem;border-top:1px solid var(--border);margin-top:1rem;">
+        ParkEase · A project by <strong>Vikash Ram Mahuri</strong>
+      </div>
+
+    </div><!-- /main content -->
+  </div><!-- /layout -->
+</div>
+
+<style>
+.toc-link {
+  font-size: .8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: .3rem .5rem;
+  border-radius: 5px;
+  transition: all .15s;
+}
+.toc-link:hover { color: var(--primary); background: var(--primary-light); }
+.doc-section { margin-bottom: 3rem; }
+.doc-h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 1rem;
+  padding-bottom: .625rem;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+}
+.doc-h2 i { color: var(--primary); font-size: 1rem; }
+.doc-h3 { font-size: .95rem; font-weight: 700; color: var(--text); margin: 1.25rem 0 .5rem; }
+.doc-list { padding-left: 1.25rem; margin: 0; display: flex; flex-direction: column; gap: .4rem; }
+.doc-list li { font-size: .875rem; color: var(--text-muted); line-height: 1.5; }
+.doc-list li::marker { color: var(--primary); }
+code {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: .1rem .4rem;
+  border-radius: 4px;
+  font-size: .82rem;
+  font-family: 'Courier New', monospace;
+  color: var(--primary);
+}
+@media (max-width: 768px) {
+  .doc-section > div[style*="grid"] { grid-template-columns: 1fr !important; }
+  div[style*="position:sticky"] { display: none; }
+}
+</style>
+{% endblock %}

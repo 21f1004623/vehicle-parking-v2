@@ -66,6 +66,10 @@ def user():
 def admin():
     return render_template('admin.html')
 
+@tsapp.route('/docs')
+def docs():
+    return render_template('docs.html')
+
 
 # --- App Runner ---
 if __name__ == '__main__':
