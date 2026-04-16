@@ -34,3 +34,7 @@ Thumbs.db
 
 # Claude Code memory
 .claude/
+
+# Local planning/doc files (README.md is the only md tracked)
+FEATURES.md
+DEPLOYMENT.md
