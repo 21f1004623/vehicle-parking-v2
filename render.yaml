@@ -1,0 +1,28 @@
+services:
+
+  - type: web
+    name: parkease
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///parking.db
+      - key: REDIS_URL
+        fromService:
+          name: parkease-redis
+          type: redis
+          property: connectionString
+      - key: MAIL_SERVER
+        value: localhost
+      - key: MAIL_PORT
+        value: 1025
+
+  - type: redis
+    name: parkease-redis
+    plan: free
+    maxmemoryPolicy: noeviction
