@@ -26,3 +26,4 @@ services:
     name: parkease-redis
     plan: free
     maxmemoryPolicy: noeviction
+    ipAllowList: []
