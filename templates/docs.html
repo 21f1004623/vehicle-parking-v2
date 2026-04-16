@@ -26,7 +26,7 @@
     <h1 style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;color:#fff;margin:0 0 .75rem;letter-spacing:-.02em;">
       ParkEase Documentation
     </h1>
-    <p style="color:#94a3b8;font-size:1rem;max-width:520px;margin:0 auto;line-height:1.7;">
+    <p style="color:#94a3b8;font-size:1.1rem;max-width:520px;margin:0 auto;line-height:1.7;">
       Stack overview, API reference, default credentials, and live deployment limitations.
     </p>
   </div>
@@ -111,7 +111,7 @@
       <!-- API Reference -->
       <section id="api" class="doc-section">
         <h2 class="doc-h2"><i class="fas fa-plug"></i> API Reference</h2>
-        <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:1rem;">All endpoints return <code>{ success, message, ...data }</code>. Protected routes require <code>Authorization: Bearer &lt;token&gt;</code>.</p>
+        <p style="color:var(--text-muted);font-size:1rem;margin-bottom:1rem;">All endpoints return <code>{ success, message, ...data }</code>. Protected routes require <code>Authorization: Bearer &lt;token&gt;</code>.</p>
 
         <h3 class="doc-h3">Auth</h3>
         <table class="data-table">
@@ -181,7 +181,7 @@
       <!-- Seed Data -->
       <section id="seed" class="doc-section">
         <h2 class="doc-h2"><i class="fas fa-database"></i> Seed Data</h2>
-        <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:.75rem;">Automatically populated on first run so all dashboards have data immediately.</p>
+        <p style="color:var(--text-muted);font-size:1rem;margin-bottom:.75rem;">Automatically populated on first run so all dashboards have data immediately.</p>
         <table class="data-table">
           <thead><tr><th>Type</th><th>Count</th><th>Detail</th></tr></thead>
           <tbody>
@@ -196,7 +196,7 @@
       <!-- Deployment Limits -->
       <section id="limits" class="doc-section">
         <h2 class="doc-h2"><i class="fas fa-cloud"></i> Live Deployment Limits</h2>
-        <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:.75rem;">This app is hosted on <strong>Render's free tier</strong>. The following limitations apply:</p>
+        <p style="color:var(--text-muted);font-size:1rem;margin-bottom:.75rem;">This app is hosted on <strong>Render's free tier</strong>. The following limitations apply:</p>
         <table class="data-table">
           <thead><tr><th>Feature</th><th>Status</th><th>Reason</th></tr></thead>
           <tbody>
@@ -253,18 +253,18 @@
 
 <style>
 .toc-link {
-  font-size: .8rem;
+  font-size: .875rem;
   font-weight: 500;
   color: var(--text-muted);
   text-decoration: none;
-  padding: .3rem .5rem;
+  padding: .35rem .6rem;
   border-radius: 5px;
   transition: all .15s;
 }
 .toc-link:hover { color: var(--primary); background: var(--primary-light); }
 .doc-section { margin-bottom: 3rem; }
 .doc-h2 {
-  font-size: 1.25rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: var(--text);
   margin: 0 0 1rem;
@@ -274,20 +274,24 @@
   align-items: center;
   gap: .625rem;
 }
-.doc-h2 i { color: var(--primary); font-size: 1rem; }
-.doc-h3 { font-size: .95rem; font-weight: 700; color: var(--text); margin: 1.25rem 0 .5rem; }
-.doc-list { padding-left: 1.25rem; margin: 0; display: flex; flex-direction: column; gap: .4rem; }
-.doc-list li { font-size: .875rem; color: var(--text-muted); line-height: 1.5; }
+.doc-h2 i { color: var(--primary); font-size: 1.1rem; }
+.doc-h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin: 1.25rem 0 .6rem; }
+.doc-list { padding-left: 1.25rem; margin: 0; display: flex; flex-direction: column; gap: .5rem; }
+.doc-list li { font-size: 1rem; color: var(--text-muted); line-height: 1.6; }
 .doc-list li::marker { color: var(--primary); }
 code {
   background: var(--bg);
   border: 1px solid var(--border);
-  padding: .1rem .4rem;
+  padding: .15rem .5rem;
   border-radius: 4px;
-  font-size: .82rem;
+  font-size: .9rem;
   font-family: 'Courier New', monospace;
   color: var(--primary);
 }
+/* larger table text on docs page */
+#docs .data-table td,
+#docs .data-table th { font-size: .95rem; }
+
 @media (max-width: 768px) {
   .doc-section > div[style*="grid"] { grid-template-columns: 1fr !important; }
   div[style*="position:sticky"] { display: none; }
