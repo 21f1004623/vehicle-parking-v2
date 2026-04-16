@@ -31,24 +31,21 @@
     </p>
   </div>
 
-  <!-- Sticky sidebar + content -->
-  <div style="max-width:1100px;margin:0 auto;padding:3rem 2rem;display:flex;gap:2.5rem;align-items:flex-start;">
-
-    <!-- Sidebar TOC -->
-    <div style="width:200px;flex-shrink:0;position:sticky;top:1.5rem;">
-      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.75rem;">On this page</div>
-      <nav style="display:flex;flex-direction:column;gap:.25rem;">
-        <a href="#stack"       class="toc-link">Tech Stack</a>
-        <a href="#features"    class="toc-link">Features</a>
-        <a href="#api"         class="toc-link">API Reference</a>
-        <a href="#credentials" class="toc-link">Credentials</a>
-        <a href="#seed"        class="toc-link">Seed Data</a>
-        <a href="#limits"      class="toc-link">Deployment Limits</a>
-      </nav>
+  <!-- Sticky section nav -->
+  <div style="position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 2rem;overflow-x:auto;">
+    <div style="max-width:1100px;margin:0 auto;display:flex;gap:.375rem;white-space:nowrap;">
+      <a href="#stack"       class="toc-pill">Tech Stack</a>
+      <a href="#features"    class="toc-pill">Features</a>
+      <a href="#api"         class="toc-pill">API Reference</a>
+      <a href="#credentials" class="toc-pill">Credentials</a>
+      <a href="#seed"        class="toc-pill">Seed Data</a>
+      <a href="#limits"      class="toc-pill">Deployment Limits</a>
     </div>
+  </div>
 
-    <!-- Main content -->
-    <div style="flex:1;min-width:0;">
+  <!-- Main content -->
+  <div style="max-width:1100px;margin:0 auto;padding:3rem 2rem;">
+    <div>
 
       <!-- Tech Stack -->
       <section id="stack" class="doc-section">
@@ -254,21 +251,23 @@
         </div>
       </div>
 
-    </div><!-- /main content -->
-  </div><!-- /layout -->
+    </div>
+  </div>
 </div>
 
 <style>
-.toc-link {
-  font-size: .875rem;
-  font-weight: 500;
+.toc-pill {
+  font-size: .85rem;
+  font-weight: 600;
   color: var(--text-muted);
   text-decoration: none;
-  padding: .35rem .6rem;
-  border-radius: 5px;
+  padding: .4rem .875rem;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
   transition: all .15s;
+  flex-shrink: 0;
 }
-.toc-link:hover { color: var(--primary); background: var(--primary-light); }
+.toc-pill:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-light); }
 .doc-section { margin-bottom: 3rem; }
 .doc-h2 {
   font-size: 1.4rem;
@@ -301,7 +300,6 @@ code {
 
 @media (max-width: 768px) {
   .doc-section > div[style*="grid"] { grid-template-columns: 1fr !important; }
-  div[style*="position:sticky"] { display: none; }
 }
 </style>
 {% endblock %}
